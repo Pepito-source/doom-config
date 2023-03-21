@@ -212,13 +212,25 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 * Elfeed
-
+** Elfeed goodies
+#+begin_src emacs-lisp :tangle yes
+(require 'elfeed-goodies)
+(elfeed-goodies/setup)
+(setq elfeed-goodies/entry-pane-size 0.5)
+#+end_src
 ** Elfeed-org
 #+begin_src emacs-lisp :tangle yes
 (use-package elfeed-org
   :config
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
+#+end_src
+** Keymaps
+#+begin_src emacs-lisp :tangle yes
+(map! :leader
+      :desc "Elfeed"
+       "e e" #'elfeed
+       "e r" #'elfeed-update)
 #+end_src
 
 * Org-mode
@@ -233,7 +245,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
     ; code to run after loading org-ref
     )
 
-;(require 'openalex)
+(require 'openalex)
 
 (define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
 (define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
@@ -251,6 +263,15 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 	      org-ref-insert-label-function 'org-ref-insert-label-link
 	      org-ref-insert-ref-function 'org-ref-insert-ref-link
 	      org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
+#+end_src
+
+This keybinding allows to insert quickly a reference
+#+begin_src emacs-lisp :tangle yes
+;; * Doom emacs keybinding for inserting org ref link to bibtex entry
+(map! :leader
+      :desc "Org-ref insert link"
+      "i i" #'org-ref-insert-link
+      "i l" #'org-ref-insert-ref-link)
 #+end_src
 
 ** Scimax formatting
@@ -884,14 +905,6 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 (global-set-key (kbd "H-l") 'ns-copy-including-secondary)
 #+END_SRC
 
-This keybinding allows to insert quickly a reference
-#+begin_src emacs-lisp :tangle yes
-;; * Doom emacs keybinding for inserting org ref link to bibtex entry
-(map! :leader
-      :desc "Org-ref insert link"
-      "i i" #'org-ref-insert-link
-      "i l" #'org-ref-insert-ref-link)
-#+end_src
 
 ** Cycling languages in aspell
 #+begin_src emacs-lisp :tangle yes

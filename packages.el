@@ -112,3 +112,6 @@
 (package! diminish)
 (package! lispy)
 (package! ibuffer-projectile)           ; To make scimax-notebook work
+
+(package! elfeed-score)
+(package! elfeed-goodies)

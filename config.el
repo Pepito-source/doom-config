@@ -144,10 +144,19 @@
   (add-hook 'org-mode-hook #'flycheck-mode)
   (define-key flycheck-mode-map (kbd "s-;") 'flycheck-previous-error))
 
+(require 'elfeed-goodies)
+(elfeed-goodies/setup)
+(setq elfeed-goodies/entry-pane-size 0.5)
+
 (use-package elfeed-org
   :config
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
+
+(map! :leader
+      :desc "Elfeed"
+       "e e" #'elfeed
+       "e r" #'elfeed-update)
 
 (use-package org-ref
     :after org
@@ -157,7 +166,7 @@
     ; code to run after loading org-ref
     )
 
-;(require 'openalex)
+(require 'openalex)
 
 (define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
 (define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
@@ -173,6 +182,12 @@
 	      org-ref-insert-label-function 'org-ref-insert-label-link
 	      org-ref-insert-ref-function 'org-ref-insert-ref-link
 	      org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
+
+;; * Doom emacs keybinding for inserting org ref link to bibtex entry
+(map! :leader
+      :desc "Org-ref insert link"
+      "i i" #'org-ref-insert-link
+      "i l" #'org-ref-insert-ref-link)
 
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -713,12 +728,6 @@ then exit them."
 
 
 (global-set-key (kbd "H-l") 'ns-copy-including-secondary)
-
-;; * Doom emacs keybinding for inserting org ref link to bibtex entry
-(map! :leader
-      :desc "Org-ref insert link"
-      "i i" #'org-ref-insert-link
-      "i l" #'org-ref-insert-ref-link)
 
 (global-set-key (kbd "H-m") 'cycle-ispell-languages)
 

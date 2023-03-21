@@ -7,7 +7,7 @@
 (setq my/work-base-dir (concat my/sync-base-dir "02_work/"))
 (setq my/media-base-dir (concat my/sync-base-dir "Media/"))
 (setq org-directory my/work-base-dir
-      org-roam-directory (concat org-directory "org-roam/"))
+      org-roam-directory    (concat org-directory "org-roam/"))
 
 (setq scimax-dir "~/scimax/.emacs.d")
 (setq scimax-user-dir "~/scimax/")
@@ -22,14 +22,22 @@
 (require 'mu4e)
 (require 'smtpmail)
 
-(use-package! diminish)
+(use-package f)
+(use-package diminish)
+(use-package lispy)
 
-(use-package! aggressive-indent
-  :config (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode))
+(add-to-list 'load-path "~/scimax")
+(require 'scimax-hydra)
 
-(use-package! scimax
-  :load-path "~/scimax/.emacs.d"
-  )
+
+
+(require 'ob-jupyter)
+(require 'scimax-jupyter)
+(require 'scimax)
+(require 'scimax-mode)
+(require 'scimax-org)
+(require 'scimax-utils)
+(require 'scimax-spellcheck)
 
 (setq scroll-conservatively 100)
 
@@ -117,10 +125,6 @@
   :config
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
-
-(use-package google-this
-  :config
-  (google-this-mode 1))
 
 (use-package org-ref
     :after org
@@ -483,9 +487,6 @@ then exit them."
                           "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/writing-articles/")
                         ))
 )
-
-(use-package ox-ipynb
-  :after ox)
 
 (setq org-latex-title-command "")
 

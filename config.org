@@ -22,7 +22,7 @@
 (setq my/work-base-dir (concat my/sync-base-dir "02_work/"))
 (setq my/media-base-dir (concat my/sync-base-dir "Media/"))
 (setq org-directory my/work-base-dir
-      org-roam-directory (concat org-directory "org-roam/"))
+      org-roam-directory    (concat org-directory "org-roam/"))
 
 (setq scimax-dir "~/scimax/.emacs.d")
 (setq scimax-user-dir "~/scimax/")
@@ -45,28 +45,26 @@
 #+end_src
 
 * Scimax
-** From Packages
-
-The diminish package is an Emacs package that provides a simple way to hide or change the names of minor modes displayed in the mode-line.
-#+begin_src emacs-lisp :tangle yes
-(use-package! diminish)
-#+end_src
-
-The aggressive-indent package is an Emacs package that automatically adjusts the indentation of code as you type.
-#+begin_src emacs-lisp :tangle yes
-(use-package! aggressive-indent
-  :config (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode))
-#+end_src
-
-
-
-
 
 #+begin_src emacs-lisp :tangle yes
-(use-package! scimax
-  :load-path "~/scimax/.emacs.d"
-  )
+(use-package f)
+(use-package diminish)
+(use-package lispy)
+
+(add-to-list 'load-path "~/scimax")
+(require 'scimax-hydra)
+
+
+
+(require 'ob-jupyter)
+(require 'scimax-jupyter)
+(require 'scimax)
+(require 'scimax-mode)
+(require 'scimax-org)
+(require 'scimax-utils)
+(require 'scimax-spellcheck)
 #+end_src
+
 * Visual settings
 
 ** Scroll conservatively
@@ -201,52 +199,6 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 * Org-mode
-** From Scimax packages.el
-
-#+begin_src emacs-lisp :tangle no
-(use-package counsel
-  :init
-  (require 'ivy)
-  (setq projectile-completion-system 'ivy)
-  (setq ivy-use-virtual-buffers t)
-  (define-prefix-command 'counsel-prefix-map)
-  (global-set-key (kbd "H-c") 'counsel-prefix-map)
-
-  ;; default pattern ignores order.
-  (setf (cdr (assoc t ivy-re-builders-alist))
-	'ivy--regex-ignore-order)
-  :bind
-  (("M-x" . counsel-M-x)
-   ("C-x b" . ivy-switch-buffer)
-   ("C-x C-b" . counsel-ibuffer)
-   ("C-x d" . counsel-dired)
-   ("C-x C-f" . counsel-find-file)
-   ("<f7>" . counsel-recentf)
-   ("C-x f" . counsel-recentf)
-   ("C-x l" . counsel-locate)
-   ("C-x p" . counsel-projectile)
-   ("C-h f" . counsel-describe-function)
-   ("C-h v" . counsel-describe-variable)
-   ("C-h i" . counsel-info-lookup-symbol)
-   ("C-c r" . ivy-resume)
-   ("H-c r" . ivy-resume)
-   ("s-r" . ivy-resume)
-   ("H-r" . ivy-resume)
-   ("H-c l" . counsel-load-library)
-   ("H-c f" . counsel-find-library)
-   ("H-c g" . counsel-git-grep)
-   ("H-c a" . counsel-ag)
-   ("H-c p" . counsel-pt))
-  :diminish ""
-  :config
-  (counsel-mode))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(use-package google-this
-  :config
-  (google-this-mode 1))
-#+end_src
 
 ** Org-ref
 #+begin_src emacs-lisp :tangle yes
@@ -602,7 +554,7 @@ then exit them."
 
 #+end_src
 
-** Org-agenda
+** Org-agenda files
 #+begin_src emacs-lisp :tangle yes
 (after! org
   (setq org-agenda-files (append
@@ -631,7 +583,8 @@ then exit them."
 #+end_src
 
 ** Export to iPython Notebook
-#+begin_src emacs-lisp :tangle yes
+This package conflicts with Doom Emacs jupyter configuration !
+#+begin_src emacs-lisp :tangle no
 (use-package ox-ipynb
   :after ox)
 #+end_src

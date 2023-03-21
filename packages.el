@@ -64,9 +64,6 @@
   (:host github
    :repo "jkitchin/org-ref"))
 
-(package! scimax :recipe
-  (:local-repo "~/scimax/.emacs.d/"))
-
 (package! pretty-hydra)
 
 (package! org-mac-link)
@@ -107,3 +104,10 @@
 (package! emacsql-sqlite)
 (package! smtpmail)
 (package! gitter)
+
+(package! scimax :recipe
+  (:local-repo "~/scimax"))
+
+(package! f)
+(package! diminish)
+(package! lispy)

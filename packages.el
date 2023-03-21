@@ -111,3 +111,4 @@
 (package! f)
 (package! diminish)
 (package! lispy)
+(package! ibuffer-projectile)           ; To make scimax-notebook work

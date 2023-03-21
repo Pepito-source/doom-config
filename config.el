@@ -1,5 +1,5 @@
-  (setq user-full-name "Vincent Montero"
-        user-mail-address "vincent_montero@icloud.com")
+(setq user-full-name "Vincent Montero"
+      user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -25,8 +25,20 @@
 (use-package f)
 (use-package diminish)
 (use-package lispy)
+(use-package aggressive-indent)
+(use-package ibuffer-projectile)
 
 (add-to-list 'load-path "~/scimax")
+
+(easy-menu-change
+ '("Scimax") "notebook"
+ `(["New notebook" nb-new t]
+   ["Open notebook" nb-open t]
+   ["Insert a notebook link" nb-insert-link t]
+   ["Update project list" nb-update-scimax-projects-menu t]
+   ("Projects"))
+ "words")
+
 
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
@@ -45,6 +57,9 @@
 ;;(require 'scimax-spellcheck)
 (require 'words)
 (require 'scimax-hydra)
+(require 'scimax-journal)
+(setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
+(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
 (require 'scimax-yas)
 
 (setq scroll-conservatively 100)

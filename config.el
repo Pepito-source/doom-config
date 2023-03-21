@@ -1,5 +1,5 @@
-(setq user-full-name "Vincent Montero"
-      user-mail-address "vincent_montero@icloud.com")
+  (setq user-full-name "Vincent Montero"
+        user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -9,7 +9,7 @@
 (setq org-directory my/work-base-dir
       org-roam-directory    (concat org-directory "org-roam/"))
 
-(setq scimax-dir "~/scimax/.emacs.d")
+(setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
 
 (use-package org-auto-tangle
@@ -27,17 +27,25 @@
 (use-package lispy)
 
 (add-to-list 'load-path "~/scimax")
-(require 'scimax-hydra)
-
-
 
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
-(require 'scimax)
-(require 'scimax-mode)
-(require 'scimax-org)
-(require 'scimax-utils)
-(require 'scimax-spellcheck)
+
+;;(require 'scimax)
+;;(require 'scimax-mode)
+;;(require 'scimax-org))
+;;(require 'scimax-mode)
+;;(require 'scimax-org)
+;;(require 'scimax-contacts)
+;;(require 'scimax-email)
+;;(require 'scimax-projectile)
+;;(require 'scimax-spellcheck)
+;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
+;;(require 'scimax-utils)
+;;(require 'scimax-spellcheck)
+(require 'words)
+(require 'scimax-hydra)
+(require 'scimax-yas)
 
 (setq scroll-conservatively 100)
 
@@ -711,6 +719,10 @@ then exit them."
 (global-set-key (kbd "H-e") 'ivy-insert-org-entity)
 (global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
 (global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
+
+;;(global-unset-key (kbd "<f12>"))
+(global-set-key (kbd "s-<") 'scimax/body)
+(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
 
 (map! :map evil-window-map
       "SPC" #'rotate-layout

@@ -27,6 +27,8 @@
 (use-package lispy)
 (use-package aggressive-indent)
 (use-package ibuffer-projectile)
+(use-package ivy-yasnippet
+  :bind ("H-," . ivy-yasnippet))
 
 (add-to-list 'load-path "~/scimax")
 
@@ -43,24 +45,19 @@
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
 
-;;(require 'scimax)
-;;(require 'scimax-mode)
-;;(require 'scimax-org))
-;;(require 'scimax-mode)
-;;(require 'scimax-org)
-;;(require 'scimax-contacts)
-;;(require 'scimax-email)
-;;(require 'scimax-projectile)
-;;(require 'scimax-spellcheck)
-;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
-;;(require 'scimax-utils)
-;;(require 'scimax-spellcheck)
-(require 'words)
+(use-package words
+  :bind ("H-w" . words-hydra/body))
+(require 'scimax-autoformat-abbrev)
+
 (require 'scimax-hydra)
+
 (require 'scimax-journal)
 (setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
-(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
+
+
 (require 'scimax-yas)
+(require 'scimax-elfeed)
+(require 'scimax-spellcheck)
 
 (setq scroll-conservatively 100)
 
@@ -156,7 +153,25 @@
 (map! :leader
       :desc "Elfeed"
        "e e" #'elfeed
-       "e r" #'elfeed-update)
+       "e u" #'elfeed-update)
+
+(evil-define-key 'normal elfeed-show-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+
+(evil-define-key 'normal elfeed-search-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+
+(evil-define-key elfeed-show-mode-map
+  (kbd "E") 'email-elfeed-entry
+  (kbd "C") (lambda () (interactive) (org-capture nil "e"))
+  (kbd "D") 'doi-utils-add-entry-from-elfeed-entry
+;; help me alternate fingers in marking entries as read
+  (kbd "F") 'elfeed-search-untag-all-unread
+  (kbd "O") 'elfeed-search-show-entry)
+
+;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
 
 (use-package org-ref
     :after org
@@ -762,3 +777,6 @@ then exit them."
       "C-<right>"      #'+evil/window-move-right)
 
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
+
+;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
+(require 'scimax-notebook)

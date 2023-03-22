@@ -45,13 +45,15 @@
 #+end_src
 
 * Scimax
-
+** Packages
 #+begin_src emacs-lisp :tangle yes
 (use-package f)
 (use-package diminish)
 (use-package lispy)
 (use-package aggressive-indent)
 (use-package ibuffer-projectile)
+(use-package ivy-yasnippet
+  :bind ("H-," . ivy-yasnippet))
 
 (add-to-list 'load-path "~/scimax")
 
@@ -68,26 +70,41 @@
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
 
-;;(require 'scimax)
-;;(require 'scimax-mode)
-;;(require 'scimax-org))
-;;(require 'scimax-mode)
-;;(require 'scimax-org)
-;;(require 'scimax-contacts)
-;;(require 'scimax-email)
-;;(require 'scimax-projectile)
-;;(require 'scimax-spellcheck)
-;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
-;;(require 'scimax-utils)
-;;(require 'scimax-spellcheck)
-(require 'words)
+(use-package words
+  :bind ("H-w" . words-hydra/body))
+(require 'scimax-autoformat-abbrev)
+
 (require 'scimax-hydra)
+
 (require 'scimax-journal)
 (setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
-(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
+
+
 (require 'scimax-yas)
+(require 'scimax-elfeed)
+(require 'scimax-spellcheck)
+#+end_src
+** TODO Autoformat
+#+begin_src emacs-lisp :tangle no
+(add-hook 'org-mode-hook 'scimax-autoformat-mode)
+(setq scimax-autoformat-superscripts nil)
+(setq scimax-org-autoformat-ordinals t)
+(setq scimax-org-autoformat-fractions t)
+(setq scimax-org-autoformat-transposed-caps t)
+(setq scimax-org-autoformat-superscripts t)
+(setq scimax-org-autoformat-sentence-capitalization t)
+(setq scimax-org-autoformat-am-pm t)
 #+end_src
 
+** TODO Abbreviations
+#+begin_src emacs-lisp :tangle no
+(scimax-toggle-abbrevs 'scimax-month-abbreviations +1)
+(scimax-toggle-abbrevs 'scimax-weekday-abbreviations +1)
+(scimax-toggle-abbrevs 'scimax-contraction-abbreviations +1)
+(scimax-toggle-abbrevs 'scimax-transposition-abbreviations +1)
+(scimax-toggle-abbrevs 'scimax-chemical-formula-abbreviations +1)
+(scimax-toggle-abbrevs 'scimax-misc-abbreviations +1)
+#+end_src
 * Visual settings
 
 ** Scroll conservatively
@@ -218,6 +235,17 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 (elfeed-goodies/setup)
 (setq elfeed-goodies/entry-pane-size 0.5)
 #+end_src
+** TODO Elfeed-score
+https://www.unwoundstack.com/doc/elfeed-score/curr
+#+begin_src emacs-lisp :tangle no
+(use-package! elfeed-score
+  :after elfeed
+  :config
+  (elfeed-score-enable)
+  (define-key elfeed-search-mode-map "=" elfeed-score-map))
+
+(setq elfeed-search-print-entry-function #'elfeed-score-print-entry)
+  #+end_src
 ** Elfeed-org
 #+begin_src emacs-lisp :tangle yes
 (use-package elfeed-org
@@ -230,9 +258,28 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 (map! :leader
       :desc "Elfeed"
        "e e" #'elfeed
-       "e r" #'elfeed-update)
+       "e u" #'elfeed-update)
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+(evil-define-key 'normal elfeed-show-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+
+(evil-define-key 'normal elfeed-search-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+
+(evil-define-key elfeed-show-mode-map
+  (kbd "E") 'email-elfeed-entry
+  (kbd "C") (lambda () (interactive) (org-capture nil "e"))
+  (kbd "D") 'doi-utils-add-entry-from-elfeed-entry
+;; help me alternate fingers in marking entries as read
+  (kbd "F") 'elfeed-search-untag-all-unread
+  (kbd "O") 'elfeed-search-show-entry)
+
+;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
+#+end_src
 * Org-mode
 
 ** Org-ref
@@ -961,6 +1008,11 @@ Essential to make pdf-tools working within emacs.
 
 
 
+* Scimax notebook
+#+begin_src emacs-lisp :tangle yes
+;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
+(require 'scimax-notebook)
+#+end_src
 * Notes for debugging
 
 run elisp:emacs-version to share.

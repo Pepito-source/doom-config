@@ -1,0 +1,21 @@
+;;; Elfeed score file                                     -*- lisp -*-
+
+((version 8)
+ ("title")
+ ("content")
+ ("title-or-content"
+  (:text "quinoxaline" :title-value 10 :content-value 10 :type s)
+  )
+ ("tag"
+  (:tags (t . emacs) :value 4)
+  )
+ ("authors"
+  (:text "Montero" :value 10 :type s)
+  )
+ ("feed"
+  (:text "Eur J Med Chem" :value 10 :type S :attr t)
+  )
+ ("link")
+ (mark nil)
+ ("adjust-tags")
+ )

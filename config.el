@@ -19,8 +19,10 @@
   (setq org-auto-tangle-default t))
 
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
-(require 'mu4e)
+;; (require 'mu4e)
 (require 'smtpmail)
+
+(require 'cc-mode)
 
 (use-package f)
 (use-package diminish)
@@ -29,32 +31,39 @@
 (use-package ibuffer-projectile)
 (use-package ivy-yasnippet
   :bind ("H-," . ivy-yasnippet))
+(use-package ess-smart-equals)
 
 (add-to-list 'load-path "~/scimax")
 
-(easy-menu-change
- '("Scimax") "notebook"
- `(["New notebook" nb-new t]
-   ["Open notebook" nb-open t]
-   ["Insert a notebook link" nb-insert-link t]
-   ["Update project list" nb-update-scimax-projects-menu t]
-   ("Projects"))
- "words")
+(eval-after-load 'bibtex
+  '(progn
+     (require 'bibtex-hotkeys)))
 
-
+(require 'jupyter)
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
+;;(global-unset-key (kbd "<f12>"))
+(global-set-key (kbd "s-<") 'scimax/body)
+(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
+
 
 (use-package words
   :bind ("H-w" . words-hydra/body))
+(require 'scimax-ob)
 (require 'scimax-autoformat-abbrev)
-
+(require 'scimax-utils)
+;; (require 'scimax-contacts)
 (require 'scimax-hydra)
-
+(require 'scimax-statistics)
 (require 'scimax-journal)
 (setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
 
+(easy-menu-add)
+(eval-after-load 'easy-menu
+  '(progn
+     (require 'scimax-notebook)))
 
+(require 'scimax-ivy) ; M-TAB for multiple selection
 (require 'scimax-yas)
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
@@ -120,7 +129,7 @@
 (setq ispell-program-name "aspell")
 (setq ispell-list-command "list")
 
-(let ((langs '("spanish" "british" "french" "english")))
+(let ((langs '("british" "english" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
   (dolist (elem langs) (ring-insert lang-ring elem)))
 
@@ -173,15 +182,16 @@
 
 ;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
 
-(use-package org-ref
-    :after org
-    :init
-    ; code to run before loading org-ref
-    :config
-    ; code to run after loading org-ref
-    )
+;; (use-package org-ref
+;;     :after org
+;;     )
+(use-package! org-ref)
 
 (require 'openalex)
+(require 'org-ref-ivy)
+(require 'org-ref-arxiv)
+(require 'org-ref-scopus)
+(require 'org-ref-wos)
 
 (define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
 (define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
@@ -189,14 +199,13 @@
 (define-key org-mode-map (kbd "s-ç") 'org-ref-insert-label-link)
 (define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
 
-(use-package org-ref-ivy
-  :ensure nil
-  :load-path (lambda () (expand-file-name "org-ref" scimax-dir))
-  :init (setq org-ref-insert-link-function 'org-ref-insert-link-hydra/body
-	      org-ref-insert-cite-function 'org-ref-cite-insert-ivy
-	      org-ref-insert-label-function 'org-ref-insert-label-link
-	      org-ref-insert-ref-function 'org-ref-insert-ref-link
-	      org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
+(setq bibtex-autokey-year-length 4
+          bibtex-autokey-name-year-separator "-"
+          bibtex-autokey-year-title-separator "-"
+          bibtex-autokey-titleword-separator "-"
+          bibtex-autokey-titlewords 2
+          bibtex-autokey-titlewords-stretch 1
+          bibtex-autokey-titleword-length 5)
 
 ;; * Doom emacs keybinding for inserting org ref link to bibtex entry
 (map! :leader
@@ -626,6 +635,7 @@ then exit them."
 (add-to-list 'org-latex-packages-alist '("" "graphbox" nil)) ; To align graphics inside tables
 
 (add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
+(add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "booktabs" t))  ; for \toprule etc. in tables
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
 (add-to-list 'org-latex-packages-alist '("" "array" nil))      ; For table array
@@ -650,6 +660,9 @@ then exit them."
 
 (add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
 
+(add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
+(add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
+
 (with-eval-after-load 'ox-latex
 
      (add-to-list 'org-latex-classes
@@ -667,7 +680,6 @@ then exit them."
      (add-to-list 'org-latex-classes
                   '("mdpi"
                     "\\documentclass{Definitions/mdpi}
-                     [NO-DEFAULT-PACKAGES]
                      [PACKAGES]
                      [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
@@ -699,6 +711,51 @@ then exit them."
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ))
      )
+
+(defun my-org-export-to-pdf-gloss-bibtex ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "bibtex %b"
+           "makeglossaries %b"
+           "makeindex %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+
+(defun my-org-export-to-pdf-gloss-biber ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "biber %b"
+           "makeglossaries %b"
+           "makeindex %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+
+(defun my-org-export-to-pdf-biber ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "biber %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+
+(setq org-latex-image-default-width nil)
 
 ;;				Last Update HTML
 (defun my-org-html-postamble (plist)
@@ -759,10 +816,6 @@ then exit them."
 (global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
 (global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
 
-;;(global-unset-key (kbd "<f12>"))
-(global-set-key (kbd "s-<") 'scimax/body)
-(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
-
 (map! :map evil-window-map
       "SPC" #'rotate-layout
       ;; Navigation
@@ -777,6 +830,3 @@ then exit them."
       "C-<right>"      #'+evil/window-move-right)
 
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
-
-;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
-(require 'scimax-notebook)

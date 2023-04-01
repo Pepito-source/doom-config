@@ -66,6 +66,9 @@
 
 (package! pretty-hydra)
 
+(package! hydra)
+(package! xref)
+
 (package! org-mac-link)
 
 (package! ivy-bibtex)
@@ -115,3 +118,24 @@
 
 (package! elfeed-score)
 (package! elfeed-goodies)
+
+
+(package! ess)
+(package! ess-R-data-view)
+(package! ess-smart-equals)
+(package! ess-smart-underscore)
+(package! polymode)
+
+(package! cc-mode)
+
+(package! cl-lib)
+
+;; the eval and compile seems especially necessary for native compilation on the newest Emacs.
+
+(package! dash)
+(package! s)
+
+(package! parsebib)
+(package! bibtex-completion)
+(package! hydra)
+

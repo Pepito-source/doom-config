@@ -40,12 +40,16 @@
 * mu4e
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
-(require 'mu4e)
+;; (require 'mu4e)
 (require 'smtpmail)
 #+end_src
 
 * Scimax
 ** Packages
+#+begin_src emacs-lisp :tangle yes
+(require 'cc-mode)
+#+end_src
+
 #+begin_src emacs-lisp :tangle yes
 (use-package f)
 (use-package diminish)
@@ -54,32 +58,39 @@
 (use-package ibuffer-projectile)
 (use-package ivy-yasnippet
   :bind ("H-," . ivy-yasnippet))
+(use-package ess-smart-equals)
 
 (add-to-list 'load-path "~/scimax")
 
-(easy-menu-change
- '("Scimax") "notebook"
- `(["New notebook" nb-new t]
-   ["Open notebook" nb-open t]
-   ["Insert a notebook link" nb-insert-link t]
-   ["Update project list" nb-update-scimax-projects-menu t]
-   ("Projects"))
- "words")
+(eval-after-load 'bibtex
+  '(progn
+     (require 'bibtex-hotkeys)))
 
-
+(require 'jupyter)
 (require 'ob-jupyter)
 (require 'scimax-jupyter)
+;;(global-unset-key (kbd "<f12>"))
+(global-set-key (kbd "s-<") 'scimax/body)
+(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
+
 
 (use-package words
   :bind ("H-w" . words-hydra/body))
+(require 'scimax-ob)
 (require 'scimax-autoformat-abbrev)
-
+(require 'scimax-utils)
+;; (require 'scimax-contacts)
 (require 'scimax-hydra)
-
+(require 'scimax-statistics)
 (require 'scimax-journal)
 (setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
 
+(easy-menu-add)
+(eval-after-load 'easy-menu
+  '(progn
+     (require 'scimax-notebook)))
 
+(require 'scimax-ivy) ; M-TAB for multiple selection
 (require 'scimax-yas)
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
@@ -204,7 +215,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 (setq ispell-program-name "aspell")
 (setq ispell-list-command "list")
 
-(let ((langs '("spanish" "british" "french" "english")))
+(let ((langs '("british" "english" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
   (dolist (elem langs) (ring-insert lang-ring elem)))
 
@@ -281,18 +292,18 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 ;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
 #+end_src
 * Org-mode
-
 ** Org-ref
 #+begin_src emacs-lisp :tangle yes
-(use-package org-ref
-    :after org
-    :init
-    ; code to run before loading org-ref
-    :config
-    ; code to run after loading org-ref
-    )
+;; (use-package org-ref
+;;     :after org
+;;     )
+(use-package! org-ref)
 
 (require 'openalex)
+(require 'org-ref-ivy)
+(require 'org-ref-arxiv)
+(require 'org-ref-scopus)
+(require 'org-ref-wos)
 
 (define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
 (define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
@@ -302,14 +313,14 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
-(use-package org-ref-ivy
-  :ensure nil
-  :load-path (lambda () (expand-file-name "org-ref" scimax-dir))
-  :init (setq org-ref-insert-link-function 'org-ref-insert-link-hydra/body
-	      org-ref-insert-cite-function 'org-ref-cite-insert-ivy
-	      org-ref-insert-label-function 'org-ref-insert-label-link
-	      org-ref-insert-ref-function 'org-ref-insert-ref-link
-	      org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
+(setq bibtex-autokey-year-length 4
+          bibtex-autokey-name-year-separator "-"
+          bibtex-autokey-year-title-separator "-"
+          bibtex-autokey-titleword-separator "-"
+          bibtex-autokey-titlewords 2
+          bibtex-autokey-titlewords-stretch 1
+          bibtex-autokey-titleword-length 5)
+
 #+end_src
 
 This keybinding allows to insert quickly a reference
@@ -696,6 +707,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 #+end_src
 
 *** Packages
+**** Scimax defaults
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-default-packages-alist
       '(("AUTO" "inputenc" t)   ;; this is for having good fonts
@@ -751,7 +763,6 @@ This package conflicts with Doom Emacs jupyter configuration !
 
 (add-to-list 'org-latex-packages-alist '("" "soul" nil))             ; To highlight text
 (add-to-list 'org-latex-packages-alist '("" "microtype" nil))       ; For command \textls[]{}
-
 #+end_src
 
 **** Page layout
@@ -766,20 +777,17 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "ragged2e" nil))   ; For command \justifying
 (add-to-list 'org-latex-packages-alist '("" "pbox" nil))       ; For biography environment
 (add-to-list 'org-latex-packages-alist '("" "enotez" nil))    ; For endnotes
-
 #+end_src
 
 **** Files & PDFs
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "pdfpages" nil))           ; Include PDF documents in LATEX
-
 #+end_src
 
 **** Floats: figs & tables
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "adjustbox" t))
 (add-to-list 'org-latex-packages-alist '("skip=0.5 \\baselineskip" "caption" nil)) ; Customising captions in floating environments
-
 #+end_src
 
 **** Figures & images
@@ -788,18 +796,17 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "tikz" nil))            ; For \foreach used for Orcid icon
 (add-to-list 'org-latex-packages-alist '("" "changepage" nil)) ; To adjust the width of the column for the title part and figures/tables (adjustwidth environment)
 (add-to-list 'org-latex-packages-alist '("" "graphbox" nil)) ; To align graphics inside tables
-
 #+end_src
 
 **** Tables
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
+(add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "booktabs" t))  ; for \toprule etc. in tables
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
 (add-to-list 'org-latex-packages-alist '("" "array" nil))      ; For table array
 (add-to-list 'org-latex-packages-alist '("" "xcolor, colortbl" nil)) ; To provide color for soul (for english editing), for adding cell color of table
 (setq org-e-latex-tables-booktabs t)
-
 #+end_src
 
 **** Maths & science
@@ -808,7 +815,6 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "mathpazo" nil))  ; Fonts to typeset mathematics to match Palatino
 (add-to-list 'org-latex-packages-alist '("" "upgreek" nil))    ; For making greek letters not italic
 (add-to-list 'org-latex-packages-alist '("" "attrib" nil))     ; For XML2PDF use \tag{} for equation
-
 #+end_src
 
 **** Code
@@ -816,7 +822,6 @@ This package conflicts with Doom Emacs jupyter configuration !
 (setq org-latex-listings 'minted)
 (setq org-latex-custom-lang-environments
             '((emacs-lisp "common-lispcode")))
-
 #+end_src
 
 **** Chemistry
@@ -827,13 +832,17 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "chemnum" t))   ; A method for numbering chemical compounds
 (add-to-list 'org-latex-packages-alist '("" "bpchem" t)) ;numbering molecules with \CNref
 (add-to-list 'org-latex-packages-alist '("" "chemnum" t))
-
 #+end_src
 
 **** Other
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
+#+end_src
 
+**** Glossaries and indexes
+#+begin_src emacs-lisp :tangle yes
+(add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
+(add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
 #+end_src
 
 *** Latex classes
@@ -856,7 +865,6 @@ This package conflicts with Doom Emacs jupyter configuration !
      (add-to-list 'org-latex-classes
                   '("mdpi"
                     "\\documentclass{Definitions/mdpi}
-                     [NO-DEFAULT-PACKAGES]
                      [PACKAGES]
                      [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
@@ -890,6 +898,60 @@ This package conflicts with Doom Emacs jupyter configuration !
      )
 #+end_src
 
+*** Export glossaries & acronyms
+#+begin_src emacs-lisp :tangle yes
+(defun my-org-export-to-pdf-gloss-bibtex ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "bibtex %b"
+           "makeglossaries %b"
+           "makeindex %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(defun my-org-export-to-pdf-gloss-biber ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "biber %b"
+           "makeglossaries %b"
+           "makeindex %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+#+end_src
+
+*** Biber
+#+begin_src emacs-lisp :tangle yes
+(defun my-org-export-to-pdf-biber ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "biber %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+#+end_src
+*** Default image size
+#+begin_src emacs-lisp :tangle yes
+(setq org-latex-image-default-width nil)
+#+end_src
 ** HTML export fixes
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;;				Last Update HTML
@@ -897,6 +959,8 @@ This package conflicts with Doom Emacs jupyter configuration !
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 #+END_SRC
+
+
 
 * Keybindings
 https://www.masteringemacs.org/article/mastering-key-bindings-emacs
@@ -952,7 +1016,6 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 (global-set-key (kbd "H-l") 'ns-copy-including-secondary)
 #+END_SRC
 
-
 ** Cycling languages in aspell
 #+begin_src emacs-lisp :tangle yes
 (global-set-key (kbd "H-m") 'cycle-ispell-languages)
@@ -972,13 +1035,6 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 (global-set-key (kbd "H-e") 'ivy-insert-org-entity)
 (global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
 (global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
-#+end_src
-
-** Scimax hydra
-#+begin_src emacs-lisp :tangle yes
-;;(global-unset-key (kbd "<f12>"))
-(global-set-key (kbd "s-<") 'scimax/body)
-(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
 #+end_src
 
 ** Windows
@@ -1008,11 +1064,6 @@ Essential to make pdf-tools working within emacs.
 
 
 
-* Scimax notebook
-#+begin_src emacs-lisp :tangle yes
-;;(org-babel-load-file (expand-file-name "scimax-notebook.org" scimax-dir))
-(require 'scimax-notebook)
-#+end_src
 * Notes for debugging
 
 run elisp:emacs-version to share.

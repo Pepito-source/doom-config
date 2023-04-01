@@ -22,7 +22,7 @@
 
        :completion
        company           ; the ultimate code completion backend
-       helm              ; the *other* search engine for love and life
+       ;; helm              ; the *other* search engine for love and life
        ;; ido               ; the other *other* search engine...
        ivy               ; a search engine for love and life
        ;; vertico           ; the search engine of the future
@@ -177,7 +177,7 @@
        ;;zig               ; C, but simpler
 
        :email
-       (mu4e +org )
+       ;; (mu4e +org )
        ;;notmuch
        ;;(wanderlust +gmail)
 

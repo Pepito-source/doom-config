@@ -26,6 +26,8 @@
 
 (setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
+
+(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python")
 #+end_src
 
 * Org-auto-tangle
@@ -77,7 +79,7 @@
 (use-package words
   :bind ("H-w" . words-hydra/body))
 (require 'scimax-ob)
-(require 'scimax-autoformat-abbrev)
+;; (require 'scimax-autoformat-abbrev)
 (require 'scimax-utils)
 ;; (require 'scimax-contacts)
 (require 'scimax-hydra)
@@ -117,7 +119,27 @@
 (scimax-toggle-abbrevs 'scimax-misc-abbreviations +1)
 #+end_src
 * Visual settings
+** Theme
+#+begin_src emacs-lisp :tangle yes
+(setq doom-theme 'doom-dracula)
+#+end_src
+** Display time
+#+begin_src emacs-lisp :tangle yes
+(setq display-time-day-and-date t)
+(display-time)
+(display-time-mode 1)
+(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
+(toggle-frame-maximized)
 
+(setq-default bidi-paragraph-direction nil)
+(setq-default bidi-paragraph-separate-re "^"
+      bidi-paragraph-start-re "^")
+(setq-default bidi-display-reordering t)
+(defun set-bidi-env ()
+"interactive"
+(setq bidi-paragraph-direction 'nil))
+(add-hook 'org-mode-hook 'set-bidi-env)
+#+end_src
 ** Scroll conservatively
 #+begin_src emacs-lisp :tangle yes
 (setq scroll-conservatively 100)
@@ -291,7 +313,212 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 
 ;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
 #+end_src
-* Org-mode
+* Org-roam
+#+begin_src emacs-lisp :tangle yes
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
+* Org-roam-bibtex
+#+begin_src emacs-lisp :tangle yes
+(use-package org-roam-bibtex
+  :after (org-roam)
+  :hook (org-roam-mode . org-roam-bibtex-mode)
+  :config
+  (setq orb-preformat-keywords
+    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+  (setq orb-autokey-format "%A%y")
+  (setq orb-pdf-scrapper-export-fields
+    '("author" "editor" "title" "journal" "date"))
+  (setq orb-templates
+        '(("r" "ref" plain (function org-roam-capture--get-point)
+           ""
+           :file-name "${=key=}"
+           :head "#+TITLE: ${title}\n
+                  #+ROAM_KEY: ${ref}
+
+- tags ::
+- keywords :: ${keywords}\n
+
+ * Meta information\n
+        :PROPERTIES:\n
+        :Custom_ID: ${=key=}\n
+        :URL: ${url}\n
+        :AUTHOR: ${author-or-editor}\n
+        :INTERLEAVE_PDF: %(orb-process-file-field \"${=key=}\")\n
+        :INTERLEAVE_PAGE_NOTE: \n
+        :END:\n\n"
+
+        :unnarrowed t)))
+  :bind (:map org-mode-map
+         (("C-c n a" . orb-note-actions))))
+#+end_src
+* Bibliography
+** Bib files
+#+begin_src emacs-lisp :tangle yes
+(defvar bib-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/")
+
+(defconst my/bib-libraries
+   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
+   ) ; All of my bib databases.
+
+(defconst my/main-pdfs-library-path
+  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
+
+(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/") ; I use org-roam to manage all my notes, including bib notes.
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography PDF location
+       bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
+       bibtex-completion-notes-path my/bib-notes-dir
+       bibtex-completion-pdf-open-function  (lambda (fpath)
+                                             (call-process "open" nil 0 nil fpath))
+       )
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(setq! citar-bibliography my/bib-libraries
+       citar-library-paths my/main-pdfs-library-path
+       citar-notes-paths my/bib-notes-dir
+       )
+#+end_src
+
+** Packages
+*** Org-mac-link
+#+begin_src emacs-lisp :tangle yes
+(use-package org-mac-link)
+#+end_src
+
+*** Ivy-bibtex
+#+begin_src emacs-lisp :tangle yes
+(use-package ivy-bibtex
+  :init
+  (setq bibtex-completion-bibliography (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" "\.bib$")
+	bibtex-completion-library-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")
+	bibtex-completion-notes-path "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/"
+	bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
+
+	bibtex-completion-additional-search-fields '(keywords)
+	bibtex-completion-display-formats
+	'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+	  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+	  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+	  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+	  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+	bibtex-completion-pdf-open-function
+	(lambda (fpath)
+	  (call-process "open" nil 0 nil fpath))))
+#+end_src
+
+*** TODO Org-Cite
+#+begin_src emacs-lisp :tangle no
+(use-package! oc
+  :config
+  (require 'oc-biblatex)
+  (require 'oc-csl)
+  (require 'citar)
+  (setq org-cite-global-bibliography my/bib-libraries
+        org-cite-insert-processor 'citar
+        org-cite-follow-processor 'citar
+        org-cite-activate-processor 'citar
+        org-cite-export-processors '((latex biblatex)
+                                     (t csl))))
+
+#+end_src
+
+*** TODO Citar
+#+begin_src emacs-lisp :tangle no
+(use-package! citar
+  :hook (doom-after-init-modules . citar-refresh)
+  :config
+  ;; This will add watches for the global bib files and in addition add a hook to LaTeX-mode-hook and org-mode-hook to add watches for local bibliographic files.
+  ;;(citar-filenotify-setup '(LaTeX-mode-hook org-mode-hook))
+  (require 'citar-org)
+  (setq citar-bibliography my/bib-libraries
+        citar-library-paths my/main-pdfs-library-path
+        citar-file-extensions '("pdf" "org" "md")
+        citar-file-open-function #'find-file)
+  (defun my/citar-full-names (names)
+    "Transform names like LastName, FirstName to FirstName LastName."
+    (when (stringp names)
+      (mapconcat
+       (lambda (name)
+         (if (eq 1 (length name))
+             (split-string name " ")
+           (let ((split-name (split-string name ", ")))
+             (cl-concatenate 'string (nth 1 split-name) " " (nth 0 split-name)))))
+       (split-string names " and ") ", ")))
+  (setq citar-display-transform-functions
+        '((t . citar-clean-string)
+          (("author" "editor") . my/citar-full-names)))
+  (setq citar-templates
+        '((main . "${author editor:55}     ${date year issued:4}     ${title:55}")
+          (suffix . "  ${tags keywords keywords:40}")
+          (preview . "${author editor} ${title}, ${journal publisher container-title collection-title booktitle} ${volume} (${year issued date}).\n")
+          (note . "#+title: Notes on ${author editor}, ${title}")))
+  ;; use consult-completing-read for enhanced interface
+  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple))
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(defvar citar-indicator-files-icons
+  (citar-indicator-create
+   :symbol (all-the-icons-faicon
+            "file-o"
+            :face 'all-the-icons-green
+            :v-adjust -0.1)
+   :function #'citar-has-files
+   :padding "  " ; need this because the default padding is too low for these icons
+   :tag "has:files"))
+
+(defvar citar-indicator-links-icons
+  (citar-indicator-create
+   :symbol (all-the-icons-octicon
+            "link"
+            :face 'all-the-icons-orange
+            :v-adjust 0.01)
+   :function #'citar-has-links
+   :padding "  "
+   :tag "has:links"))
+
+(defvar citar-indicator-notes-icons
+  (citar-indicator-create
+   :symbol (all-the-icons-material
+            "speaker_notes"
+            :face 'all-the-icons-blue
+            :v-adjust -0.3)
+   :function #'citar-has-notes
+   :padding "  "
+   :tag "has:notes"))
+
+(defvar citar-indicator-cited-icons
+  (citar-indicator-create
+   :symbol (all-the-icons-faicon
+            "circle-o"
+            :face 'all-the-icon-green)
+   :function #'citar-is-cited
+   :padding "  "
+   :tag "is:cited"))
+
+(setq citar-indicators
+  (list citar-indicator-files-icons
+        citar-indicator-links-icons
+        citar-indicator-notes-icons
+        citar-indicator-cited-icons))
+#+end_src
+
 ** Org-ref
 #+begin_src emacs-lisp :tangle yes
 ;; (use-package org-ref
@@ -332,7 +559,7 @@ This keybinding allows to insert quickly a reference
       "i l" #'org-ref-insert-ref-link)
 #+end_src
 
-** Scimax formatting
+* Scimax formatting
 #+begin_src emacs-lisp :tangle yes
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -600,7 +827,7 @@ then exit them."
 
 #+end_src
 
-** Getting things done
+* Getting things done
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-gtd
   :after org
@@ -629,34 +856,7 @@ then exit them."
    ("C-c d f" . org-gtd-clarify-finalize)))
 #+end_src
 
-** Bibtex files
-#+begin_src emacs-lisp :tangle yes
-(use-package org-mac-link)
-
-(defvar bib-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/")
-
-(use-package ivy-bibtex
-  :init
-  (setq bibtex-completion-bibliography (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" "\.bib$")
-	bibtex-completion-library-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")
-	bibtex-completion-notes-path "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/"
-	bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
-
-	bibtex-completion-additional-search-fields '(keywords)
-	bibtex-completion-display-formats
-	'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-	  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-	  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
-	bibtex-completion-pdf-open-function
-	(lambda (fpath)
-	  (call-process "open" nil 0 nil fpath))))
-
-
-#+end_src
-
-** Org-agenda files
+* Org-agenda files
 #+begin_src emacs-lisp :tangle yes
 (after! org
   (setq org-agenda-files (append
@@ -684,15 +884,15 @@ then exit them."
 )
 #+end_src
 
-** Export to iPython Notebook
+* Export to iPython Notebook
 This package conflicts with Doom Emacs jupyter configuration !
 #+begin_src emacs-lisp :tangle no
 (use-package ox-ipynb
   :after ox)
 #+end_src
 
-** Latex
-*** Export process
+* Latex
+** Export process
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-title-command "")
 
@@ -706,8 +906,8 @@ This package conflicts with Doom Emacs jupyter configuration !
               "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
 #+end_src
 
-*** Packages
-**** Scimax defaults
+** Packages
+*** Scimax defaults
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-default-packages-alist
       '(("AUTO" "inputenc" t)   ;; this is for having good fonts
@@ -755,7 +955,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 ))
 #+end_src
 
-**** Texts & Fonts
+*** Texts & Fonts
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "indentfirst" nil))     ; Indent first paragraph after section header
 (add-to-list 'org-latex-packages-alist '("right" "lineno" nil))          ; Line numbers on paragraphs
@@ -765,7 +965,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "microtype" nil))       ; For command \textls[]{}
 #+end_src
 
-**** Page layout
+*** Page layout
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "marginnote" nil))       ; For left column
 (add-to-list 'org-latex-packages-alist '("" "marginfix" nil)) ; For command \clearmargin for manually moving the left column to the next page
@@ -779,18 +979,18 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "enotez" nil))    ; For endnotes
 #+end_src
 
-**** Files & PDFs
+*** Files & PDFs
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "pdfpages" nil))           ; Include PDF documents in LATEX
 #+end_src
 
-**** Floats: figs & tables
+*** Floats: figs & tables
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "adjustbox" t))
 (add-to-list 'org-latex-packages-alist '("skip=0.5 \\baselineskip" "caption" nil)) ; Customising captions in floating environments
 #+end_src
 
-**** Figures & images
+*** Figures & images
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "epstopdf" nil)) ; Convert EPS to PDF using Ghostscript
 (add-to-list 'org-latex-packages-alist '("" "tikz" nil))            ; For \foreach used for Orcid icon
@@ -798,7 +998,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "graphbox" nil)) ; To align graphics inside tables
 #+end_src
 
-**** Tables
+*** Tables
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
@@ -806,10 +1006,10 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
 (add-to-list 'org-latex-packages-alist '("" "array" nil))      ; For table array
 (add-to-list 'org-latex-packages-alist '("" "xcolor, colortbl" nil)) ; To provide color for soul (for english editing), for adding cell color of table
-(setq org-e-latex-tables-booktabs t)
+(setq org-latex-tables-booktabs t)
 #+end_src
 
-**** Maths & science
+*** Maths & science
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "calc" nil))            ; Simple arithmetic in LATEX commands
 (add-to-list 'org-latex-packages-alist '("" "mathpazo" nil))  ; Fonts to typeset mathematics to match Palatino
@@ -817,14 +1017,14 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "attrib" nil))     ; For XML2PDF use \tag{} for equation
 #+end_src
 
-**** Code
+*** Code
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-listings 'minted)
 (setq org-latex-custom-lang-environments
             '((emacs-lisp "common-lispcode")))
 #+end_src
 
-**** Chemistry
+*** Chemistry
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t)) ; provides commands for typesetting chemical molecular formulae and equations.
 (add-to-list 'org-latex-packages-alist '("" "chemmacros" t)) ; A collection of macros to support typesetting chemistry documents, nomenclature commands, oxidation numbers, thermodynamic data, newman projections, etc.
@@ -834,18 +1034,18 @@ This package conflicts with Doom Emacs jupyter configuration !
 (add-to-list 'org-latex-packages-alist '("" "chemnum" t))
 #+end_src
 
-**** Other
+*** Other
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
 #+end_src
 
-**** Glossaries and indexes
+*** Glossaries and indexes
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
 (add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
 #+end_src
 
-*** Latex classes
+** Latex classes
 
 #+begin_src emacs-lisp :tangle yes
 (with-eval-after-load 'ox-latex
@@ -895,10 +1095,37 @@ This package conflicts with Doom Emacs jupyter configuration !
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ))
+
+     (add-to-list 'org-latex-classes
+                  '("jmedchem"
+                    "\\documentclass{achemso}
+                     [NO-DEFAULT-PACKAGES]
+                     [PACKAGES]
+                     [EXTRA]"
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+                    ))
+
+     (add-to-list 'org-latex-classes
+                  '("elsarticle"
+                    "\\documentclass{elsarticle}
+                     [NO-DEFAULT-PACKAGES]
+                     [PACKAGES]
+                     [EXTRA]"
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+                    ))
+
      )
 #+end_src
 
-*** Export glossaries & acronyms
+** Export glossaries & acronyms
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-export-to-pdf-gloss-bibtex ()
   "Export the current buffer to PDF using Org mode and open the resulting PDF file."
@@ -933,7 +1160,7 @@ This package conflicts with Doom Emacs jupyter configuration !
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 #+end_src
 
-*** Biber
+** Biber
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-export-to-pdf-biber ()
   "Export the current buffer to PDF using Org mode and open the resulting PDF file."
@@ -948,19 +1175,17 @@ This package conflicts with Doom Emacs jupyter configuration !
     (org-latex-export-to-pdf)
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 #+end_src
-*** Default image size
+** Default image size
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-image-default-width nil)
 #+end_src
-** HTML export fixes
+* HTML export fixes
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;;				Last Update HTML
 (defun my-org-html-postamble (plist)
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 #+END_SRC
-
-
 
 * Keybindings
 https://www.masteringemacs.org/article/mastering-key-bindings-emacs
@@ -1053,8 +1278,6 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
       "C-<right>"      #'+evil/window-move-right)
 #+end_src
 
-
-
 * PDF-tools
 ** Enabling annotations
 Essential to make pdf-tools working within emacs.
@@ -1062,9 +1285,61 @@ Essential to make pdf-tools working within emacs.
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 #+end_src
 
-
-
 * Notes for debugging
 
 run elisp:emacs-version to share.
 
+* Formatting IC_{50}
+#+begin_src emacs-lisp :tangle yes
+(defun my/org-mode-IC_{50}-autoformat ()
+  "Autoformat IC_{50} as IC_{50} in Org-mode."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "IC_{50}" nil t)
+      (replace-match "IC_{50}"))))
+
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))
+
+#+end_src
+
+* TODO ChatGPT API
+#+begin_src emacs-lisp :tangle no
+(defun chatgpt-api-call (text)
+  "Call the ChatGPT API with the given text and return the response."
+  (let* ((url "https://api.openai.com/v1/chat/completions") ; Replace with the appropriate API endpoint
+         (headers '(("Content-Type" . "application/json")
+                    ("Authorization" . "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"))) ; Replace with your actual API key
+         (payload `(("prompt" . ,text)
+                    ("max_tokens" . "50")))) ; Adjust parameters as needed
+
+    ;; Make the API request
+    (with-current-buffer
+        (url-retrieve-synchronously url
+                                    `((lambda (status)
+                                        (switch-to-buffer (current-buffer))
+                                        (goto-char (point-min))
+                                        (re-search-forward "\n\n")
+                                        (delete-region (point-min) (point)))
+                                      ,headers
+                                      ,(json-encode payload)))
+      (buffer-string))))
+
+;; Usage example
+(let ((text "Hello, ChatGPT!"))
+  (message (chatgpt-api-call text)))
+
+
+(defun org-chatgpt-send-region ()
+  "Send selected region to ChatGPT and insert the response."
+  (interactive)
+  (let ((text (buffer-substring (region-beginning) (region-end))))
+    (setq response (chatgpt-api-call text)) ; Replace `chatgpt-api-call` with your API integration code
+    (save-excursion
+      (goto-char (region-end))
+      (insert "\n\nChatGPT response:\n")
+      (insert response))))
+
+(define-key org-mode-map (kbd "C-c C-g") 'org-chatgpt-send-region)
+#+end_src

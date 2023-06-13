@@ -240,19 +240,17 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
   (let ((lang (ring-ref lang-ring -1)))
     (ring-insert lang-ring lang)
     (ispell-change-dictionary lang)))
-
-
-(provide 'vm-aspell)
-(require 'vm-aspell)
+(global-set-key (kbd "H-m") 'cycle-ispell-languages)
 #+END_SRC
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package flycheck
   ;; Jun 28 - I like this idea, but sometimes this is too slow.
   :config
   (add-hook 'text-mode-hook #'flycheck-mode)
   (add-hook 'org-mode-hook #'flycheck-mode)
   (define-key flycheck-mode-map (kbd "s-;") 'flycheck-previous-error))
+
 #+end_src
 
 * Elfeed
@@ -332,6 +330,12 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 #+end_src
 
 * Bibliography
+https://blog.tecosaur.com/tmio/2021-07-31-citations.html
+
+** Org-cite processors
+#+begin_src emacs-lisp :tangle yes
+(use-package! oc-bibtex :after oc)
+#+end_src
 ** Org-roam-bibtex
 #+begin_src emacs-lisp :tangle yes
 (use-package org-roam-bibtex
@@ -368,8 +372,6 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 #+end_src
 ** Bib files
 #+begin_src emacs-lisp :tangle yes
-(defvar bib-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/")
-
 (defconst my/bib-libraries
    (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
    ) ; All of my bib databases.
@@ -381,7 +383,7 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
-(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography PDF location
+(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
        bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
        bibtex-completion-notes-path my/bib-notes-dir
        bibtex-completion-pdf-open-function  (lambda (fpath)
@@ -405,7 +407,7 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
       org-ref-pdf-directory my/main-pdfs-library-path)
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (setq! citar-bibliography my/bib-libraries
        citar-library-paths my/main-pdfs-library-path
        citar-notes-paths my/bib-notes-dir
@@ -422,21 +424,16 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 #+begin_src emacs-lisp :tangle yes
 (use-package ivy-bibtex
   :init
-  (setq bibtex-completion-bibliography (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" "\.bib$")
-	bibtex-completion-library-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")
-	bibtex-completion-notes-path "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/"
-	bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
-
-	bibtex-completion-additional-search-fields '(keywords)
-	bibtex-completion-display-formats
-	'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-	  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-	  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
-	bibtex-completion-pdf-open-function
-	(lambda (fpath)
-	  (call-process "open" nil 0 nil fpath))))
+  (setq bibtex-completion-additional-search-fields '(keywords)
+        bibtex-completion-display-formats
+        '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+        bibtex-completion-pdf-open-function
+        (lambda (fpath)
+          (call-process "open" nil 0 nil fpath))))
 #+end_src
 
 *** TODO Org-Cite
@@ -444,6 +441,8 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 (use-package! oc
   :config
   (require 'oc-biblatex)
+  (require 'oc-bibtex)
+  (require 'oc-natbib)
   (require 'oc-csl)
   (require 'citar)
   (setq org-cite-global-bibliography my/bib-libraries
@@ -457,83 +456,9 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 
 *** TODO Citar
 #+begin_src emacs-lisp :tangle no
-(use-package! citar
-  :hook (doom-after-init-modules . citar-refresh)
-  :config
-  ;; This will add watches for the global bib files and in addition add a hook to LaTeX-mode-hook and org-mode-hook to add watches for local bibliographic files.
-  ;;(citar-filenotify-setup '(LaTeX-mode-hook org-mode-hook))
-  (require 'citar-org)
-  (setq citar-bibliography my/bib-libraries
-        citar-library-paths my/main-pdfs-library-path
-        citar-file-extensions '("pdf" "org" "md")
-        citar-file-open-function #'find-file)
-  (defun my/citar-full-names (names)
-    "Transform names like LastName, FirstName to FirstName LastName."
-    (when (stringp names)
-      (mapconcat
-       (lambda (name)
-         (if (eq 1 (length name))
-             (split-string name " ")
-           (let ((split-name (split-string name ", ")))
-             (cl-concatenate 'string (nth 1 split-name) " " (nth 0 split-name)))))
-       (split-string names " and ") ", ")))
-  (setq citar-display-transform-functions
-        '((t . citar-clean-string)
-          (("author" "editor") . my/citar-full-names)))
-  (setq citar-templates
-        '((main . "${author editor:55}     ${date year issued:4}     ${title:55}")
-          (suffix . "  ${tags keywords keywords:40}")
-          (preview . "${author editor} ${title}, ${journal publisher container-title collection-title booktitle} ${volume} (${year issued date}).\n")
-          (note . "#+title: Notes on ${author editor}, ${title}")))
-  ;; use consult-completing-read for enhanced interface
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple))
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(defvar citar-indicator-files-icons
-  (citar-indicator-create
-   :symbol (all-the-icons-faicon
-            "file-o"
-            :face 'all-the-icons-green
-            :v-adjust -0.1)
-   :function #'citar-has-files
-   :padding "  " ; need this because the default padding is too low for these icons
-   :tag "has:files"))
-
-(defvar citar-indicator-links-icons
-  (citar-indicator-create
-   :symbol (all-the-icons-octicon
-            "link"
-            :face 'all-the-icons-orange
-            :v-adjust 0.01)
-   :function #'citar-has-links
-   :padding "  "
-   :tag "has:links"))
-
-(defvar citar-indicator-notes-icons
-  (citar-indicator-create
-   :symbol (all-the-icons-material
-            "speaker_notes"
-            :face 'all-the-icons-blue
-            :v-adjust -0.3)
-   :function #'citar-has-notes
-   :padding "  "
-   :tag "has:notes"))
-
-(defvar citar-indicator-cited-icons
-  (citar-indicator-create
-   :symbol (all-the-icons-faicon
-            "circle-o"
-            :face 'all-the-icon-green)
-   :function #'citar-is-cited
-   :padding "  "
-   :tag "is:cited"))
-
 (setq citar-indicators
-  (list citar-indicator-files-icons
-        citar-indicator-links-icons
-        citar-indicator-notes-icons
-        citar-indicator-cited-icons))
+  (list citar-indicator-files ; plain text
+        citar-indicator-notes-icons)) ; icon
 #+end_src
 
 ** Org-ref
@@ -925,17 +850,42 @@ This package conflicts with Doom Emacs jupyter configuration !
 
 * Latex
 ** Export process
+Keep relative and absolute paths from org-cite
+#+begin_src emacs-lisp :tangle yes
+(defun org-cite-list-bibliography-files ()
+  "List all bibliography files defined in the buffer."
+  (delete-dups
+   (append (mapcar (lambda (value)
+		     (pcase value
+		       (`(,f . ,d)
+                        (setq f (org-strip-quotes f))
+                        (if (or (file-name-absolute-p f)
+                                (file-remote-p f)
+                                (equal d default-directory))
+                            ;; Keep absolute paths, remote paths, and
+                            ;; local relative paths.
+                            f
+                          ;; Adjust relative bibliography path for
+                          ;; #+SETUP files located in other directory.
+                          ;; Also, see `org-export--update-included-link'.
+                          (file-relative-name
+                           (expand-file-name f d) default-directory)))))
+		   (pcase (org-collect-keywords
+                           '("BIBLIOGRAPHY") nil '("BIBLIOGRAPHY"))
+		     (`(("BIBLIOGRAPHY" . ,pairs)) pairs)))
+	   org-cite-global-bibliography)))
+#+end_src
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-title-command "")
 
 (setq org-latex-prefer-user-labels t)
 
 (setq org-latex-pdf-process
-      (quote (
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-              "bibtex $(basename %b)"
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+      '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "bibtex $(basename %b)"
+        "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")
+      )
 #+end_src
 
 ** Packages
@@ -1272,11 +1222,6 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 
 (global-set-key (kbd "H-l") 'ns-copy-including-secondary)
 #+END_SRC
-
-** Cycling languages in aspell
-#+begin_src emacs-lisp :tangle yes
-(global-set-key (kbd "H-m") 'cycle-ispell-languages)
-#+end_src
 
 ** Scimax formatting
 #+begin_src emacs-lisp :tangle yes

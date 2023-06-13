@@ -12,6 +12,8 @@
 (setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
 
+(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python")
+
 (use-package org-auto-tangle
   :defer t
   :hook (org-mode . org-auto-tangle-mode)
@@ -50,7 +52,7 @@
 (use-package words
   :bind ("H-w" . words-hydra/body))
 (require 'scimax-ob)
-(require 'scimax-autoformat-abbrev)
+;; (require 'scimax-autoformat-abbrev)
 (require 'scimax-utils)
 ;; (require 'scimax-contacts)
 (require 'scimax-hydra)
@@ -67,6 +69,13 @@
 (require 'scimax-yas)
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
+
+(setq doom-theme 'doom-dracula)
+
+(setq display-time-day-and-date t)
+(display-time)
+(display-time-mode 1)
+;;(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
 
 (setq scroll-conservatively 100)
 
@@ -138,17 +147,7 @@
   (let ((lang (ring-ref lang-ring -1)))
     (ring-insert lang-ring lang)
     (ispell-change-dictionary lang)))
-
-
-(provide 'vm-aspell)
-(require 'vm-aspell)
-
-(use-package flycheck
-  ;; Jun 28 - I like this idea, but sometimes this is too slow.
-  :config
-  (add-hook 'text-mode-hook #'flycheck-mode)
-  (add-hook 'org-mode-hook #'flycheck-mode)
-  (define-key flycheck-mode-map (kbd "s-;") 'flycheck-previous-error))
+(global-set-key (kbd "H-m") 'cycle-ispell-languages)
 
 (require 'elfeed-goodies)
 (elfeed-goodies/setup)
@@ -182,6 +181,96 @@
 
 ;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
 
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+
+(setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
+(setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
+
+(use-package! oc-bibtex :after oc)
+
+(use-package org-roam-bibtex
+  :after (org-roam)
+  :hook (org-roam-mode . org-roam-bibtex-mode)
+  :config
+  (setq orb-preformat-keywords
+    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+  (setq orb-autokey-format "%A%y")
+  (setq orb-pdf-scrapper-export-fields
+    '("author" "editor" "title" "journal" "date"))
+  (setq orb-templates
+        '(("r" "ref" plain (function org-roam-capture--get-point)
+           ""
+           :file-name "${=key=}"
+           :head "#+TITLE: ${title}\n
+                  #+ROAM_KEY: ${ref}
+
+- tags ::
+- keywords :: ${keywords}\n
+
+ * Meta information\n
+        :PROPERTIES:\n
+        :Custom_ID: ${=key=}\n
+        :URL: ${url}\n
+        :AUTHOR: ${author-or-editor}\n
+        :INTERLEAVE_PDF: %(orb-process-file-field \"${=key=}\")\n
+        :INTERLEAVE_PAGE_NOTE: \n
+        :END:\n\n"
+
+        :unnarrowed t)))
+  :bind (:map org-mode-map
+         (("C-c n a" . orb-note-actions))))
+
+(defconst my/bib-libraries
+   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
+   ) ; All of my bib databases.
+
+(defconst my/main-pdfs-library-path
+  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
+
+(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/") ; I use org-roam to manage all my notes, including bib notes.
+
+(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
+       bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
+       bibtex-completion-notes-path my/bib-notes-dir
+       bibtex-completion-pdf-open-function  (lambda (fpath)
+                                             (call-process "open" nil 0 nil fpath))
+       )
+
+(setq bibtex-completion-pdf-field "File")
+
+(setq reftex-default-bibliography my/bib-libraries)
+
+(setq org-ref-default-bibliography my/bib-libraries
+      org-ref-pdf-directory my/main-pdfs-library-path)
+
+(use-package org-mac-link)
+
+(use-package ivy-bibtex
+  :init
+  (setq bibtex-completion-additional-search-fields '(keywords)
+        bibtex-completion-display-formats
+        '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+        bibtex-completion-pdf-open-function
+        (lambda (fpath)
+          (call-process "open" nil 0 nil fpath))))
+
 ;; (use-package org-ref
 ;;     :after org
 ;;     )
@@ -212,6 +301,20 @@
       :desc "Org-ref insert link"
       "i i" #'org-ref-insert-link
       "i l" #'org-ref-insert-ref-link)
+
+(setq org-ref-notes-function 'orb-edit-notes)
+(setq org-ref-note-title-format
+  "* TODO %y -%t
+ :PROPERTIES:
+  :Custom_ID: %k
+  :AUTHOR: %9a
+  :JOURNAL: %j
+  :VOLUME: %v
+  :DOI: %D
+  :URL: %U
+ :END:
+
+")
 
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -503,28 +606,6 @@ then exit them."
    ;; processing phase
    ("C-c d f" . org-gtd-clarify-finalize)))
 
-(use-package org-mac-link)
-
-(defvar bib-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/")
-
-(use-package ivy-bibtex
-  :init
-  (setq bibtex-completion-bibliography (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" "\.bib$")
-	bibtex-completion-library-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")
-	bibtex-completion-notes-path "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/"
-	bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
-
-	bibtex-completion-additional-search-fields '(keywords)
-	bibtex-completion-display-formats
-	'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-	  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-	  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
-	bibtex-completion-pdf-open-function
-	(lambda (fpath)
-	  (call-process "open" nil 0 nil fpath))))
-
 (after! org
   (setq org-agenda-files (append
                        '("/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/"
@@ -550,16 +631,39 @@ then exit them."
                         ))
 )
 
+(defun org-cite-list-bibliography-files ()
+  "List all bibliography files defined in the buffer."
+  (delete-dups
+   (append (mapcar (lambda (value)
+		     (pcase value
+		       (`(,f . ,d)
+                        (setq f (org-strip-quotes f))
+                        (if (or (file-name-absolute-p f)
+                                (file-remote-p f)
+                                (equal d default-directory))
+                            ;; Keep absolute paths, remote paths, and
+                            ;; local relative paths.
+                            f
+                          ;; Adjust relative bibliography path for
+                          ;; #+SETUP files located in other directory.
+                          ;; Also, see `org-export--update-included-link'.
+                          (file-relative-name
+                           (expand-file-name f d) default-directory)))))
+		   (pcase (org-collect-keywords
+                           '("BIBLIOGRAPHY") nil '("BIBLIOGRAPHY"))
+		     (`(("BIBLIOGRAPHY" . ,pairs)) pairs)))
+	   org-cite-global-bibliography)))
+
 (setq org-latex-title-command "")
 
 (setq org-latex-prefer-user-labels t)
 
 (setq org-latex-pdf-process
-      (quote (
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-              "bibtex $(basename %b)"
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-              "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+      '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "bibtex $(basename %b)"
+        "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")
+      )
 
 (setq org-latex-default-packages-alist
       '(("AUTO" "inputenc" t)   ;; this is for having good fonts
@@ -640,7 +744,7 @@ then exit them."
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
 (add-to-list 'org-latex-packages-alist '("" "array" nil))      ; For table array
 (add-to-list 'org-latex-packages-alist '("" "xcolor, colortbl" nil)) ; To provide color for soul (for english editing), for adding cell color of table
-(setq org-e-latex-tables-booktabs t)
+(setq org-latex-tables-booktabs t)
 
 (add-to-list 'org-latex-packages-alist '("" "calc" nil))            ; Simple arithmetic in LATEX commands
 (add-to-list 'org-latex-packages-alist '("" "mathpazo" nil))  ; Fonts to typeset mathematics to match Palatino
@@ -710,6 +814,33 @@ then exit them."
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ))
+
+     (add-to-list 'org-latex-classes
+                  '("jmedchem"
+                    "\\documentclass{achemso}
+                     [NO-DEFAULT-PACKAGES]
+                     [PACKAGES]
+                     [EXTRA]"
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+                    ))
+
+     (add-to-list 'org-latex-classes
+                  '("elsarticle"
+                    "\\documentclass{elsarticle}
+                     [NO-DEFAULT-PACKAGES]
+                     [PACKAGES]
+                     [EXTRA]"
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+                    ))
+
      )
 
 (defun my-org-export-to-pdf-gloss-bibtex ()
@@ -801,8 +932,6 @@ then exit them."
 
 (global-set-key (kbd "H-l") 'ns-copy-including-secondary)
 
-(global-set-key (kbd "H-m") 'cycle-ispell-languages)
-
 (global-set-key (kbd "H--") 'org-subscript-region-or-point)
 (global-set-key (kbd "H-=") 'org-superscript-region-or-point)
 (global-set-key (kbd "H-i") 'org-italics-region-or-point)
@@ -829,4 +958,55 @@ then exit them."
       "C-<up>"         #'+evil/window-move-up
       "C-<right>"      #'+evil/window-move-right)
 
+(eval-after-load 'org '(require 'org-pdfview))
+
+(add-to-list 'org-file-apps
+             '("\\.pdf\\'" . (lambda (file link)
+                                     (org-pdfview-open link))))
+
+(pdf-loader-install)
+(use-package pdf-tools
+ :config
+ (setq-default pdf-view-display-size 'fit-page)
+ (setq pdf-annot-activate-created-annotations t)
+ (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+ (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
+ (setq pdf-view-resize-factor 1.1)
+ (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+ (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+ (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
+(use-package org-noter
+  :config
+  (setq org-noter-always-create-frame t
+        org-noter-separate-notes-from-heading t
+        org-noter-default-heading-title "Page $p$"
+        org-noter-auto-save-last-location t
+        org-noter-separate-notes-from-heading t
+        org-noter-doc-property-in-notes t
+        ))
+(setq org-noter-property-doc-file "INTERLEAVE_PDF"
+      org-noter-property-note-location "INTERLEAVE_PAGE_NOTE")
+
+(defun my/org-ref-open-pdf-at-point ()
+  "Open the pdf for bibtex key under point if it exists."
+  (interactive)
+  (let* ((results (org-ref-get-bibtex-key-and-file))
+         (key (car results))
+         (pdf-file (car (bibtex-completion-find-pdf key))))
+    (if (file-exists-p pdf-file)
+        (org-open-file pdf-file)
+      (message "No PDF found for %s" key))))
+(setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
+
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
+
+(defun my/org-mode-IC_{50}-autoformat ()
+  "Autoformat IC_{50} as IC_{50} in Org-mode."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "IC_{50}" nil t)
+      (replace-match "IC_{50}"))))
+
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))

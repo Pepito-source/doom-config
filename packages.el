@@ -94,6 +94,7 @@
 (package! hy-mode)
 (package! mustache) 
 (package! helm-bibtex)
+(package! helm-xref)
 (package! pydoc) 
 
 (package! smart-mode-line) 
@@ -139,3 +140,8 @@
 (package! bibtex-completion)
 (package! hydra)
 
+(package! org-ai)
+
+(unpin! org-roam)
+(package! org-roam-ui)
+(package! org-roam-bibtex)

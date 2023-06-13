@@ -7,6 +7,10 @@
 #+startup: show3levels
 
 [[https://github.com/doomemacs/doomemacs/blob/develop/docs/getting%5Fstarted.org#Configure][DoomEmacs config notice]]
+* Interesting configs
+https://github.com/nalhasan/emacsconf2020/blob/master/config.org
+https://github.com/WouterSpekkink/dotfiles/blob/master/doom/config.el
+http://www.wouterspekkink.org/academia/writing/tool/doom-emacs/2021/02/27/writing-academic-papers-with-org-mode.html
 
 * Contact info
 #+begin_src emacs-lisp :tangle yes
@@ -128,17 +132,7 @@
 (setq display-time-day-and-date t)
 (display-time)
 (display-time-mode 1)
-(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
-(toggle-frame-maximized)
-
-(setq-default bidi-paragraph-direction nil)
-(setq-default bidi-paragraph-separate-re "^"
-      bidi-paragraph-start-re "^")
-(setq-default bidi-display-reordering t)
-(defun set-bidi-env ()
-"interactive"
-(setq bidi-paragraph-direction 'nil))
-(add-hook 'org-mode-hook 'set-bidi-env)
+;;(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
 #+end_src
 ** Scroll conservatively
 #+begin_src emacs-lisp :tangle yes
@@ -330,7 +324,15 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 #+end_src
-* Org-roam-bibtex
+
+** Graph
+#+begin_src emacs-lisp :tangle yes
+(setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
+(setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
+#+end_src
+
+* Bibliography
+** Org-roam-bibtex
 #+begin_src emacs-lisp :tangle yes
 (use-package org-roam-bibtex
   :after (org-roam)
@@ -364,7 +366,6 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
   :bind (:map org-mode-map
          (("C-c n a" . orb-note-actions))))
 #+end_src
-* Bibliography
 ** Bib files
 #+begin_src emacs-lisp :tangle yes
 (defvar bib-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/")
@@ -386,6 +387,22 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
        bibtex-completion-pdf-open-function  (lambda (fpath)
                                              (call-process "open" nil 0 nil fpath))
        )
+
+#+end_src
+
+If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.
+~File = {/path/to/article.pdf}~
+#+begin_src emacs-lisp :tangle yes
+(setq bibtex-completion-pdf-field "File")
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(setq reftex-default-bibliography my/bib-libraries)
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(setq org-ref-default-bibliography my/bib-libraries
+      org-ref-pdf-directory my/main-pdfs-library-path)
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
@@ -559,6 +576,21 @@ This keybinding allows to insert quickly a reference
       "i l" #'org-ref-insert-ref-link)
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+(setq org-ref-notes-function 'orb-edit-notes)
+(setq org-ref-note-title-format
+  "* TODO %y -%t
+ :PROPERTIES:
+  :Custom_ID: %k
+  :AUTHOR: %9a
+  :JOURNAL: %j
+  :VOLUME: %v
+  :DOI: %D
+  :URL: %U
+ :END:
+
+")
+#+end_src
 * Scimax formatting
 #+begin_src emacs-lisp :tangle yes
 (defun org-markup-region-or-point (type beginning-marker end-marker)
@@ -1279,6 +1311,52 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 #+end_src
 
 * PDF-tools
+** Open org-to-latex files in Emacs
+#+begin_src emacs-lisp :tangle yes
+(eval-after-load 'org '(require 'org-pdfview))
+
+(add-to-list 'org-file-apps
+             '("\\.pdf\\'" . (lambda (file link)
+                                     (org-pdfview-open link))))
+#+end_src
+** Org-noter settings
+#+begin_src emacs-lisp :tangle yes
+(pdf-loader-install)
+(use-package pdf-tools
+ :config
+ (setq-default pdf-view-display-size 'fit-page)
+ (setq pdf-annot-activate-created-annotations t)
+ (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+ (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
+ (setq pdf-view-resize-factor 1.1)
+ (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+ (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+ (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
+(use-package org-noter
+  :config
+  (setq org-noter-always-create-frame t
+        org-noter-separate-notes-from-heading t
+        org-noter-default-heading-title "Page $p$"
+        org-noter-auto-save-last-location t
+        org-noter-separate-notes-from-heading t
+        org-noter-doc-property-in-notes t
+        ))
+(setq org-noter-property-doc-file "INTERLEAVE_PDF"
+      org-noter-property-note-location "INTERLEAVE_PAGE_NOTE")
+#+end_src
+** Org-ref-open-pdf-at-point
+#+begin_src emacs-lisp :tangle yes
+(defun my/org-ref-open-pdf-at-point ()
+  "Open the pdf for bibtex key under point if it exists."
+  (interactive)
+  (let* ((results (org-ref-get-bibtex-key-and-file))
+         (key (car results))
+         (pdf-file (car (bibtex-completion-find-pdf key))))
+    (if (file-exists-p pdf-file)
+        (org-open-file pdf-file)
+      (message "No PDF found for %s" key))))
+(setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
+#+end_src
 ** Enabling annotations
 Essential to make pdf-tools working within emacs.
 #+begin_src emacs-lisp :tangle yes
@@ -1304,42 +1382,3 @@ run elisp:emacs-version to share.
 
 #+end_src
 
-* TODO ChatGPT API
-#+begin_src emacs-lisp :tangle no
-(defun chatgpt-api-call (text)
-  "Call the ChatGPT API with the given text and return the response."
-  (let* ((url "https://api.openai.com/v1/chat/completions") ; Replace with the appropriate API endpoint
-         (headers '(("Content-Type" . "application/json")
-                    ("Authorization" . "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"))) ; Replace with your actual API key
-         (payload `(("prompt" . ,text)
-                    ("max_tokens" . "50")))) ; Adjust parameters as needed
-
-    ;; Make the API request
-    (with-current-buffer
-        (url-retrieve-synchronously url
-                                    `((lambda (status)
-                                        (switch-to-buffer (current-buffer))
-                                        (goto-char (point-min))
-                                        (re-search-forward "\n\n")
-                                        (delete-region (point-min) (point)))
-                                      ,headers
-                                      ,(json-encode payload)))
-      (buffer-string))))
-
-;; Usage example
-(let ((text "Hello, ChatGPT!"))
-  (message (chatgpt-api-call text)))
-
-
-(defun org-chatgpt-send-region ()
-  "Send selected region to ChatGPT and insert the response."
-  (interactive)
-  (let ((text (buffer-substring (region-beginning) (region-end))))
-    (setq response (chatgpt-api-call text)) ; Replace `chatgpt-api-call` with your API integration code
-    (save-excursion
-      (goto-char (region-end))
-      (insert "\n\nChatGPT response:\n")
-      (insert response))))
-
-(define-key org-mode-map (kbd "C-c C-g") 'org-chatgpt-send-region)
-#+end_src

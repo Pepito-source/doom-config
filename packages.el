@@ -49,10 +49,12 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
+;; From DistroTube
 (package! org-auto-tangle)              ;autotangling README.org to README.el
 
 (package! beacon)
 
+;; Scimax
 (package! ox-pandoc)
 
 (package! ox-ipynb :recipe
@@ -71,9 +73,12 @@
 
 (package! org-mac-link)
 
+(unpin! ivy-bibtex)
 (package! ivy-bibtex)
 (package! ivy-xref)
 (package! ivy-yasnippet)
+(package! helm-bibtex)
+(package! helm-xref)
 
 (package! counsel)
 
@@ -93,9 +98,7 @@
 (package! esup)
 (package! hy-mode)
 (package! mustache) 
-(package! helm-bibtex)
-(package! helm-xref)
-(package! pydoc) 
+(package! pydoc)
 
 (package! smart-mode-line) 
 (package! smex) 
@@ -145,3 +148,30 @@
 (unpin! org-roam)
 (package! org-roam-ui)
 (package! org-roam-bibtex)
+
+;; From Ivy module
+(package! bibtex-completion :pin "8ebf50d5bd368082d0b7ab79d26a52f372cdef98")
+(package! ivy-bibtex :pin "8ebf50d5bd368082d0b7ab79d26a52f372cdef98")
+(package! swiper :pin "b8be4913a661b557e0d3275726e36871556569d3")
+(package! ivy)
+(package! ivy-hydra)
+(package! ivy-avy)
+(package! counsel)
+
+(package! amx :pin "37f9c7ae55eb0331b27200fb745206fc58ceffc0")
+(package! counsel-projectile :pin "40d1e1d4bb70acb00fddd6f4df9778bf2c52734b")
+(package! ivy-rich :pin "600b8183ed0be8668dcc548cc2c8cb94b001363b")
+(package! wgrep :pin "edf768732a56840db6879706b64c5773c316d619")
+
+(if (modulep! +prescient)
+    (package! ivy-prescient :pin "35cf5d36132c3e96db9a9e4d1902dcfa207e7baa")
+  (when (modulep! +fuzzy)
+    (package! flx :pin "7b44a5abb254bbfbeca7a29336f7f4ebd8aabbf2")))
+
+(when (modulep! +childframe)
+  (package! ivy-posframe :pin "533a8e368fcabfd534761a5c685ce713376fa594"))
+
+(package! all-the-icons-ivy :pin "a70cbfa1effe36efc946a823a580cec686d5e88d")
+
+(unpin! citar)
+(package! citar)

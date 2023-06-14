@@ -1,5 +1,5 @@
-(setq user-full-name "Vincent Montero"
-      user-mail-address "vincent_montero@icloud.com")
+  (setq user-full-name "Vincent Montero"
+        user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -137,6 +137,8 @@
 
 (setq ispell-program-name "aspell")
 (setq ispell-list-command "list")
+(setq-default ispell-dictionary "english")
+
 
 (let ((langs '("british" "english" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
@@ -205,7 +207,8 @@
   :after (org-roam)
   :hook (org-roam-mode . org-roam-bibtex-mode)
   :config
-  (setq orb-preformat-keywords
+  (require 'org-ref)
+    (setq orb-preformat-keywords
     '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
   (setq orb-autokey-format "%A%y")
   (setq orb-pdf-scrapper-export-fields
@@ -242,34 +245,142 @@
 
 (defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/") ; I use org-roam to manage all my notes, including bib notes.
 
-(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
-       bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
-       bibtex-completion-notes-path my/bib-notes-dir
-       bibtex-completion-pdf-open-function  (lambda (fpath)
-                                             (call-process "open" nil 0 nil fpath))
-       )
+(use-package! ivy-bibtex
+  :when (modulep! :completion vertico)
+  :defer t
+  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
 
-(setq bibtex-completion-pdf-field "File")
+(use-package! bibtex-completion
+  :defer t
+  :config
+
+  (setq! bibtex-completion-pdf-field "file"
+         bibtex-completion-additional-search-fields '(("journaltitle")
+                                                     (keywords))
+         bibtex-completion-pdf-symbol "⌘"
+         bibtex-completion-notes-symbol "✎"
+
+         bibtex-completion-display-formats
+         '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+           (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+           (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+           (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+           (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
+        )
+
+  (setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
+       bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
+       bibtex-completion-notes-path my/bib-notes-dir)
+
+  ;; Opening PDF files outside emacs, by default PDFs open in PDFTools
+  ;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
+  ;;                                            (call-process "open" nil 0 nil fpath))
+  ;;      )
+  )
+
+(global-set-key (kbd "<menu>") 'helm-command-prefix)
 
 (setq reftex-default-bibliography my/bib-libraries)
 
 (setq org-ref-default-bibliography my/bib-libraries
       org-ref-pdf-directory my/main-pdfs-library-path)
 
+
+
 (use-package org-mac-link)
 
-(use-package ivy-bibtex
+(use-package! citar
+  :hook (doom-after-init-modules . citar-refresh)
+  :config
+  (require 'citar-org)
+  :custom
+  (org-cite-global-bibliography my/bib-libraries)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+
+  (citar-bibliography my/bib-libraries)
+  (citar-library-paths my/main-pdfs-library-path)
+  (citar-notes-paths my/bib-notes-dir)
+  (citar-open-note-function 'orb-citar-edit-note)
+
+  (defvar citar-indicator-files-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-faicon
+              "file-o"
+              :face 'all-the-icons-green
+              :v-adjust -0.1)
+     :function #'citar-has-files
+     :padding "  " ; need this because the default padding is too low for these icons
+     :tag "has:files"))
+
+  (defvar citar-indicator-links-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-octicon
+              "link"
+              :face 'all-the-icons-orange
+              :v-adjust 0.01)
+     :function #'citar-has-links
+     :padding "  "
+     :tag "has:links"))
+
+  (defvar citar-indicator-notes-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-material
+              "speaker_notes"
+              :face 'all-the-icons-blue
+              :v-adjust -0.3)
+     :function #'citar-has-notes
+     :padding "  "
+     :tag "has:notes"))
+
+  (defvar citar-indicator-cited-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-faicon
+              "circle-o"
+              :face 'all-the-icon-green)
+     :function #'citar-is-cited
+     :padding "  "
+     :tag "is:cited"))
+
+  (setq citar-indicators citar-indicator-files-icons)
+
+  (setq citar-indicators
+        (list citar-indicator-files-icons
+              citar-indicator-links-icons
+              citar-indicator-notes-icons
+              citar-indicator-cited-icons))
+
+  (citar-templates
+   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
+     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
+     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
+     ))
+  ;; Configuring all-the-icons. From
+  ;; https://github.com/bdarcus/citar#rich-ui
+  (citar-symbols
+   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
+      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
+     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
+           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
+     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
+           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
+  (citar-symbol-separator "  ")
   :init
-  (setq bibtex-completion-additional-search-fields '(keywords)
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
-        bibtex-completion-pdf-open-function
-        (lambda (fpath)
-          (call-process "open" nil 0 nil fpath))))
+  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
+  ;; Change to your own theme's background(s)
+  (defface kb/citar-icon-dim
+    ;; Change these colors to match your theme. Using something like
+    ;; `face-attribute' to get the value of a particular attribute of a face might
+    ;; be more convenient.
+    '((((background dark)) :foreground "#212428")
+      (((background light)) :foreground "#f0f0f0"))
+    "Face for having icons' color be identical to the theme
+  background when \"not shown\".")
+
+  )
 
 ;; (use-package org-ref
 ;;     :after org
@@ -278,6 +389,7 @@
 
 (require 'openalex)
 (require 'org-ref-ivy)
+;(require 'org-ref-helm)
 (require 'org-ref-arxiv)
 (require 'org-ref-scopus)
 (require 'org-ref-wos)

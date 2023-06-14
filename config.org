@@ -230,6 +230,8 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq ispell-program-name "aspell")
 (setq ispell-list-command "list")
+(setq-default ispell-dictionary "english")
+
 
 (let ((langs '("british" "english" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
@@ -342,7 +344,8 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
   :after (org-roam)
   :hook (org-roam-mode . org-roam-bibtex-mode)
   :config
-  (setq orb-preformat-keywords
+  (require 'org-ref)
+    (setq orb-preformat-keywords
     '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
   (setq orb-autokey-format "%A%y")
   (setq orb-pdf-scrapper-export-fields
@@ -352,12 +355,12 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
            ""
            :file-name "${=key=}"
            :head "#+TITLE: ${title}\n
-                  #+ROAM_KEY: ${ref}
+                  ,#+ROAM_KEY: ${ref}
 
 - tags ::
 - keywords :: ${keywords}\n
 
- * Meta information\n
+ ,* Meta information\n
         :PROPERTIES:\n
         :Custom_ID: ${=key=}\n
         :URL: ${url}\n
@@ -370,7 +373,27 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
   :bind (:map org-mode-map
          (("C-c n a" . orb-note-actions))))
 #+end_src
-** Bib files
+
+org-roam capturing templates for default or bibliographic references
+#+begin_src emacs-lisp :tangle no
+(setq org-roam-capture-templates
+      '(("d" "default" plain
+         "%?"
+         :target
+         (file+head
+          "%<%Y%m%d%H%M%S>-${slug}.org"
+          "#+title: ${note-title}\n")
+         :unnarrowed t)
+        ("b" "bibliography" plain
+         "%?"
+         :target
+         (file+head
+          "%(expand-file-name (or citar-org-roam-subdir \"\") org-roam-directory)/${citar-citekey}.org"
+          "#+title: ${citar-citekey} (${citar-date}). ${note-title}.\n#+created: %U\n#+last_modified: %U\n\n")
+         :unnarrowed t)))
+
+#+end_src
+** Bib/PDF/notes files
 #+begin_src emacs-lisp :tangle yes
 (defconst my/bib-libraries
    (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
@@ -382,20 +405,43 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 (defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/") ; I use org-roam to manage all my notes, including bib notes.
 #+end_src
 
+** Ivy-Bibtex/Citar/Org-ref completion
 #+begin_src emacs-lisp :tangle yes
-(setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
+(use-package! ivy-bibtex
+  :when (modulep! :completion vertico)
+  :defer t
+  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
+
+(use-package! bibtex-completion
+  :defer t
+  :config
+
+  (setq! bibtex-completion-pdf-field "file"
+         bibtex-completion-additional-search-fields '(("journaltitle")
+                                                     (keywords))
+         bibtex-completion-pdf-symbol "⌘"
+         bibtex-completion-notes-symbol "✎"
+
+         bibtex-completion-display-formats
+         '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+           (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+           (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+           (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+           (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
+        )
+
+  (setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
        bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
-       bibtex-completion-notes-path my/bib-notes-dir
-       bibtex-completion-pdf-open-function  (lambda (fpath)
-                                             (call-process "open" nil 0 nil fpath))
-       )
+       bibtex-completion-notes-path my/bib-notes-dir)
 
-#+end_src
+  ;; Opening PDF files outside emacs, by default PDFs open in PDFTools
+  ;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
+  ;;                                            (call-process "open" nil 0 nil fpath))
+  ;;      )
+  )
 
-If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.
-~File = {/path/to/article.pdf}~
-#+begin_src emacs-lisp :tangle yes
-(setq bibtex-completion-pdf-field "File")
+(global-set-key (kbd "<menu>") 'helm-command-prefix)
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
@@ -407,58 +453,107 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
       org-ref-pdf-directory my/main-pdfs-library-path)
 #+end_src
 
-#+begin_src emacs-lisp :tangle no
-(setq! citar-bibliography my/bib-libraries
-       citar-library-paths my/main-pdfs-library-path
-       citar-notes-paths my/bib-notes-dir
-       )
+#+begin_src emacs-lisp :tangle yes
 #+end_src
 
-** Packages
-*** Org-mac-link
+** Org-mac-link
 #+begin_src emacs-lisp :tangle yes
 (use-package org-mac-link)
 #+end_src
 
-*** Ivy-bibtex
+** Citar
 #+begin_src emacs-lisp :tangle yes
-(use-package ivy-bibtex
-  :init
-  (setq bibtex-completion-additional-search-fields '(keywords)
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
-        bibtex-completion-pdf-open-function
-        (lambda (fpath)
-          (call-process "open" nil 0 nil fpath))))
-#+end_src
-
-*** TODO Org-Cite
-#+begin_src emacs-lisp :tangle no
-(use-package! oc
+(use-package! citar
+  :hook (doom-after-init-modules . citar-refresh)
   :config
-  (require 'oc-biblatex)
-  (require 'oc-bibtex)
-  (require 'oc-natbib)
-  (require 'oc-csl)
-  (require 'citar)
-  (setq org-cite-global-bibliography my/bib-libraries
-        org-cite-insert-processor 'citar
-        org-cite-follow-processor 'citar
-        org-cite-activate-processor 'citar
-        org-cite-export-processors '((latex biblatex)
-                                     (t csl))))
+  (require 'citar-org)
+  :custom
+  (org-cite-global-bibliography my/bib-libraries)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
 
-#+end_src
+  (citar-bibliography my/bib-libraries)
+  (citar-library-paths my/main-pdfs-library-path)
+  (citar-notes-paths my/bib-notes-dir)
+  (citar-open-note-function 'orb-citar-edit-note)
 
-*** TODO Citar
-#+begin_src emacs-lisp :tangle no
-(setq citar-indicators
-  (list citar-indicator-files ; plain text
-        citar-indicator-notes-icons)) ; icon
+  (defvar citar-indicator-files-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-faicon
+              "file-o"
+              :face 'all-the-icons-green
+              :v-adjust -0.1)
+     :function #'citar-has-files
+     :padding "  " ; need this because the default padding is too low for these icons
+     :tag "has:files"))
+
+  (defvar citar-indicator-links-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-octicon
+              "link"
+              :face 'all-the-icons-orange
+              :v-adjust 0.01)
+     :function #'citar-has-links
+     :padding "  "
+     :tag "has:links"))
+
+  (defvar citar-indicator-notes-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-material
+              "speaker_notes"
+              :face 'all-the-icons-blue
+              :v-adjust -0.3)
+     :function #'citar-has-notes
+     :padding "  "
+     :tag "has:notes"))
+
+  (defvar citar-indicator-cited-icons
+    (citar-indicator-create
+     :symbol (all-the-icons-faicon
+              "circle-o"
+              :face 'all-the-icon-green)
+     :function #'citar-is-cited
+     :padding "  "
+     :tag "is:cited"))
+
+  (setq citar-indicators citar-indicator-files-icons)
+
+  (setq citar-indicators
+        (list citar-indicator-files-icons
+              citar-indicator-links-icons
+              citar-indicator-notes-icons
+              citar-indicator-cited-icons))
+
+  (citar-templates
+   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
+     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
+     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
+     ))
+  ;; Configuring all-the-icons. From
+  ;; https://github.com/bdarcus/citar#rich-ui
+  (citar-symbols
+   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
+      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
+     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
+           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
+     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
+           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
+  (citar-symbol-separator "  ")
+  :init
+  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
+  ;; Change to your own theme's background(s)
+  (defface kb/citar-icon-dim
+    ;; Change these colors to match your theme. Using something like
+    ;; `face-attribute' to get the value of a particular attribute of a face might
+    ;; be more convenient.
+    '((((background dark)) :foreground "#212428")
+      (((background light)) :foreground "#f0f0f0"))
+    "Face for having icons' color be identical to the theme
+  background when \"not shown\".")
+
+  )
 #+end_src
 
 ** Org-ref
@@ -470,6 +565,7 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 
 (require 'openalex)
 (require 'org-ref-ivy)
+;(require 'org-ref-helm)
 (require 'org-ref-arxiv)
 (require 'org-ref-scopus)
 (require 'org-ref-wos)
@@ -481,6 +577,7 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 (define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
 #+end_src
 
+Automated bibtex key rules
 #+begin_src emacs-lisp :tangle yes
 (setq bibtex-autokey-year-length 4
           bibtex-autokey-name-year-separator "-"
@@ -489,10 +586,9 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
           bibtex-autokey-titlewords 2
           bibtex-autokey-titlewords-stretch 1
           bibtex-autokey-titleword-length 5)
-
 #+end_src
 
-This keybinding allows to insert quickly a reference
+DOOM emacs keybinding for inserting references
 #+begin_src emacs-lisp :tangle yes
 ;; * Doom emacs keybinding for inserting org ref link to bibtex entry
 (map! :leader
@@ -1256,7 +1352,7 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 #+end_src
 
 * PDF-tools
-** Open org-to-latex files in Emacs
+** Open org-to-latex-pdf files in Emacs
 #+begin_src emacs-lisp :tangle yes
 (eval-after-load 'org '(require 'org-pdfview))
 

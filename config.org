@@ -251,7 +251,7 @@ Save the buffer after exiting insert mode
 (require 'smtpmail)
 #+end_src
 
-* From Scimax
+* From [[https://github.com/jkitchin/scimax/tree/master][Scimax]]
 ** Packages
 #+begin_src emacs-lisp :tangle yes
 (require 'cc-mode)
@@ -750,7 +750,8 @@ org-roam capturing templates for default or bibliographic references
 #+end_src
 
 ** [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
-#+begin_src emacs-lisp :tangle yes
+I can't find a way to make org-roam-bibtex work as I want with the following code:
+#+begin_src emacs-lisp :tangle no
 (use-package! org-roam-bibtex
   :after org-roam
   :hook (org-roam-mode . org-roam-bibtex-mode)
@@ -782,6 +783,17 @@ org-roam capturing templates for default or bibliographic references
          :head "#+TITLE: ${title}"
          :unnarrowed t)))
 #+end_src
+Thus, I'll try to bind the bibtex-completion-edit-notes to citar-org-roam--create-capture-note
+#+begin_src emacs-lisp :tangle no
+(defun my-org-ref-open-bibtex-notes-advice (orig-fun &rest args)
+  "Advice function to execute citar-org-roam--create-capture-note after org-ref-open-bibtex-notes."
+  (apply orig-fun args)
+  (citar-org-roam--create-capture-note))
+
+(advice-add 'org-ref-open-bibtex-notes :after #'my-org-ref-open-bibtex-notes-advice)
+
+#+end_src
+Still doesnt work.
 
 * Bibliography: citar and org-ref
 https://blog.tecosaur.com/tmio/2021-07-31-citations.html
@@ -799,7 +811,7 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 (defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
 #+end_src
 
-** Citar
+** [[https://github.com/emacs-citar][Citar]]
 #+begin_src emacs-lisp :tangle yes
 (use-package! citar
   :hook (doom-after-init-modules . citar-refresh)
@@ -816,8 +828,6 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
   (citar-notes-paths my/bib-notes-dir)
 
   (citar-citeproc-csl-styles-dir my/csl-dir)
-
-  (citar-open-note-function 'orb-citar-edit-note)
 
   (citar-templates
    '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
@@ -850,23 +860,36 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
   )
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+(setq citar-org-roam-note-title-template
+      (concat
+       "${author} - ${title}\n"
+       "#+roam_key: cite:${=key=}\n"
+       "* ${title}\n"
+       ":PROPERTIES:\n"
+       ":Custom_ID: ${=key=}\n"
+       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+       ":AUTHOR: ${author-abbrev}\n"
+       ":JOURNAL: ${journaltitle}\n"
+       ":DATE: ${date}\n"
+       ":YEAR: ${year}\n"
+       ":DOI: ${doi}\n"
+       ":URL: ${url}\n"
+       ":END:\n\n")
+      )
+#+end_src
+
+
 ** Org-cite processors
 #+begin_src emacs-lisp :tangle yes
 (use-package! oc-bibtex :after oc)
 #+end_src
-** Bibtex completion (paths, pdfs)
-** Ivy-bibtex
+** [[https://github.com/tmalsburg/helm-bibtex][Bibtex-completion]]
 #+begin_src emacs-lisp :tangle yes
 (use-package! ivy-bibtex
   :when (modulep! :completion vertico)
-  :defer t
   :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
-#+end_src
-** Bibtex-completion
-#+begin_src emacs-lisp :tangle yes
-(use-package! bibtex-completion
-  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
   (setq bibtex-completion-additional-search-fields '(("journaltitle")
                                                      (keywords))
         bibtex-completion-pdf-symbol ""
@@ -893,7 +916,7 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
        "* ${title}\n"
        ":PROPERTIES:\n"
        ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: ~/Dropbox/Research/Papers/${=key=}.pdf\n"
+       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
        ":AUTHOR: ${author-abbrev}\n"
        ":JOURNAL: ${journaltitle}\n"
        ":DATE: ${date}\n"
@@ -909,12 +932,21 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 ;;      )
 
 #+end_src
-** Org-ref
+** [[https://github.com/jkitchin/org-ref][Org-ref]]
 *** Basic
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-ref
   :after org
-  (require 'org-ref-ivy))
+  :config
+  (require 'org-ref-ivy)
+  ;; (require 'citar-org-roam)
+  (setq org-ref-open-notes-at-point 'citar-org-roam--create-capture-note)
+  ;; (setq bibtex-completion-find-note-functions
+  ;;       (lambda ()
+  ;;         (citar-open-note nil)
+  ;;         )
+  ;;       )
+  )
 #+end_src
 *** Replace org-ref with org-cite
 #+begin_src emacs-lisp :tangle no

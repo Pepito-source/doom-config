@@ -558,37 +558,6 @@ then exit them."
 (setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
 
-(use-package! org-roam-bibtex
-  :after org-roam
-  :hook (org-roam-mode . org-roam-bibtex-mode)
-  :config
-  (require 'org-ref)
-  (require 'ivy-bibtex)
-  (setq orb-insert-interface 'ivy-bibtex)
-  (setq  bibtex-completion-pdf-field "file")
-  )
-
-(after! org-roam
-  (org-roam-bibtex-mode))
-
-(setq orb-preformat-keywords '("citekey" "author" "date" "year" "keywords" "booktitle" "file"))
-
-(setq orb-templates
-      '((\"r\" \"reference\" plain (function org-roam-capture--get-point)
-         "\n#+ROAM_KEY: cite:%^{citekey}%?
-:AUTHOR: %^{author}
-:DATE: %^{date}
-:YEAR: %^{year}
-#+CREATED: <%<%Y-%m-%d %H:%M:%S>>
-:BOOKTITLE: %^{booktitle}
-#+ROAM_TAGS: %^{keywords}
-#+SOURCE: %^{file}
-[[file:%^{file}][Source file]]
-"
-         :file-name "references/${citekey}"
-         :head "#+TITLE: ${title}"
-         :unnarrowed t)))
-
 (defconst my/bib-libraries
    (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
    ) ; All of my bib databases.
@@ -615,8 +584,6 @@ then exit them."
   (citar-notes-paths my/bib-notes-dir)
 
   (citar-citeproc-csl-styles-dir my/csl-dir)
-
-  (citar-open-note-function 'orb-citar-edit-note)
 
   (citar-templates
    '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
@@ -648,16 +615,29 @@ then exit them."
 
   )
 
+(setq citar-org-roam-note-title-template
+      (concat
+       "${author} - ${title}\n"
+       "#+roam_key: cite:${=key=}\n"
+       "* ${title}\n"
+       ":PROPERTIES:\n"
+       ":Custom_ID: ${=key=}\n"
+       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+       ":AUTHOR: ${author-abbrev}\n"
+       ":JOURNAL: ${journaltitle}\n"
+       ":DATE: ${date}\n"
+       ":YEAR: ${year}\n"
+       ":DOI: ${doi}\n"
+       ":URL: ${url}\n"
+       ":END:\n\n")
+      )
+
 (use-package! oc-bibtex :after oc)
 
 (use-package! ivy-bibtex
   :when (modulep! :completion vertico)
-  :defer t
   :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
-
-(use-package! bibtex-completion
-  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
   (setq bibtex-completion-additional-search-fields '(("journaltitle")
                                                      (keywords))
         bibtex-completion-pdf-symbol ""
@@ -684,7 +664,7 @@ then exit them."
        "* ${title}\n"
        ":PROPERTIES:\n"
        ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: ~/Dropbox/Research/Papers/${=key=}.pdf\n"
+       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
        ":AUTHOR: ${author-abbrev}\n"
        ":JOURNAL: ${journaltitle}\n"
        ":DATE: ${date}\n"
@@ -701,7 +681,16 @@ then exit them."
 
 (use-package! org-ref
   :after org
-  (require 'org-ref-ivy))
+  :config
+  (require 'org-ref-ivy)
+  ;; (require 'citar-org-roam)
+  (setq org-ref-open-notes-at-point 'citar-org-roam--create-capture-note)
+  ;; (setq bibtex-completion-find-note-functions
+  ;;       (lambda ()
+  ;;         (citar-open-note nil)
+  ;;         )
+  ;;       )
+  )
 
 (defun DDG-this ()
   "Perform a DuckDuckGo search for the selected text or prompt for input."

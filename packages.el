@@ -65,22 +65,12 @@
 (package! org-ref :recipe
   (:host github
    :repo "jkitchin/org-ref"))
-
 (package! pretty-hydra)
 
 (package! hydra)
 (package! xref)
 
 (package! org-mac-link)
-
-(unpin! ivy-bibtex)
-(package! ivy-bibtex)
-(package! ivy-xref)
-(package! ivy-yasnippet)
-(package! helm-bibtex)
-(package! helm-xref)
-
-(package! counsel)
 
 (package! google-this)
 
@@ -139,24 +129,30 @@
 (package! dash)
 (package! s)
 
-(package! parsebib)
-(package! bibtex-completion)
 (package! hydra)
 
 (package! org-ai)
 
-(unpin! org-roam)
+;; Biblio
+(unpin! org-roam bibtex-completion helm-bibtex ivy-bibtex)
 (package! org-roam-ui)
-(package! org-roam-bibtex)
+(package! org-roam-bibtex
+  :recipe (:host github :repo "org-roam/org-roam-bibtex"))
 
 ;; From Ivy module
-(package! bibtex-completion :pin "8ebf50d5bd368082d0b7ab79d26a52f372cdef98")
-(package! ivy-bibtex :pin "8ebf50d5bd368082d0b7ab79d26a52f372cdef98")
-(package! swiper :pin "b8be4913a661b557e0d3275726e36871556569d3")
+(package! swiper)
 (package! ivy)
+(package! helm)
 (package! ivy-hydra)
 (package! ivy-avy)
 (package! counsel)
+
+(package! bibtex-completion)
+(package! ivy-bibtex)
+(package! helm-bibtex)
+(package! ivy-xref)
+(package! ivy-yasnippet)
+(package! helm-xref)
 
 (package! amx :pin "37f9c7ae55eb0331b27200fb745206fc58ceffc0")
 (package! counsel-projectile :pin "40d1e1d4bb70acb00fddd6f4df9778bf2c52734b")

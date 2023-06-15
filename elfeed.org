@@ -46,3 +46,12 @@
 ** Open software :computer:gnu:
 *** [[https://www.lemagit.fr/rss/ContentSyndication.xml][LeMagIT]]
 *** [[https://planet.gnu.org/rss20.xml][PlanetGNU]]
+
+** News :news:
+*** [[https://www.lemonde.fr/rss/une.xml][Le Monde: A la une]]
+*** [[https://www.lemonde.fr/international/rss_full.xml][Le Monde: A la une International]]
+*** [[https://www.lemonde.fr/economie/rss_full.xml][Le Monde: A la une Economie]]
+*** [[https://www.lemonde.fr/biologie/rss_full.xml][Le Monde: Biologie]]
+*** [[https://www.lemonde.fr/medecine/rss_full.xml][Le Monde: Médecine]]
+*** [[https://www.lemonde.fr/sciences/rss_full.xml][Le Monde: Sciences]]
+*** [[https://www.liberation.fr/arc/outboundfeeds/rss-all/?outputType=xml][Libération]]

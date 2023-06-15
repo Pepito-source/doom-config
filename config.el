@@ -7,7 +7,8 @@
 (setq my/work-base-dir (concat my/sync-base-dir "02_work/"))
 (setq my/media-base-dir (concat my/sync-base-dir "Media/"))
 (setq org-directory my/work-base-dir
-      org-roam-directory    (concat org-directory "org-roam/"))
+      org-roam-directory    (concat org-directory "org-roam/")
+      )
 
 (setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
@@ -19,6 +20,143 @@
   :hook (org-mode . org-auto-tangle-mode)
   :config
   (setq org-auto-tangle-default t))
+
+(setq doom-theme 'doom-dracula)
+
+(setq display-time-day-and-date t)
+(display-time)
+(display-time-mode 1)
+;;(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
+
+(display-battery-mode 1)
+
+(setq scroll-conservatively 100)
+
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+
+(setq display-line-numbers-type t)
+(global-display-line-numbers-mode)
+(setq doom-modeline-enable-word-count t)
+
+;;Highlight current line
+(global-hl-line-mode)
+
+;;Scroll and Tool bar modes
+(recentf-mode 1)
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+
+(use-package org-superstar
+  :config
+  (setq org-superstar-special-todo-items t)
+  (setq org-hide-leading-stars t)
+  (add-hook 'org-mode-hook (lambda ()
+                             (org-superstar-mode 1))))
+
+(setq org-pretty-entities t)
+
+(setq org-hide-emphasis-markers t)
+
+
+(use-package org-appear
+  :hook (org-mode . org-appear-mode))
+
+(with-eval-after-load 'org-superstar
+  (setq org-superstar-item-bullet-alist
+        '((?* . ?•)
+          (?+ . ?➤)
+          (?- . ?-)))
+  (setq org-superstar-special-todo-items t))
+
+(beacon-mode 1)
+
+(map! (:after evil-org
+       :map evil-org-mode-map
+       :n "gk" (cmd! (if (org-on-heading-p)
+                         (org-backward-element)
+                       (evil-previous-visual-line)))
+       :n "gj" (cmd! (if (org-on-heading-p)
+                         (org-forward-element)
+                       (evil-next-visual-line)))))
+
+(after! dired
+  (setq dired-listing-switches "-alhv"
+        delete-by-moving-to-trash t)
+
+  (map!
+   :map dired-mode-map
+   :n [DEL] #'dired-up-directory)
+  )
+
+(defun evil-normalize-all-buffers ()
+  "Force a drop to normal state."
+  (unless (eq evil-state 'normal)
+    (dolist (buffer (buffer-list))
+      (set-buffer buffer)
+      (unless (or (minibufferp)
+                  (eq evil-state 'emacs))
+        (evil-force-normal-state)))
+    (message "Dropped back to normal state in all buffers")))
+
+(defvar evil-normal-timer
+  (run-with-idle-timer 30 t #'evil-normalize-all-buffers)
+  "Drop back to normal state after idle for 30 seconds.")
+
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+            (call-interactively #'save-buffer)))
+
+;; Meta key on apple keyboard
+(setq ns-alternate-modifier 'meta)
+(setq ns-right-alternate-modifier 'none)
+
+;; set keys for Apple keyboard, for emacs in OS X
+(setq mac-control-modifier 'control) ; make Control key do Control
+(setq mac-option-modifier 'meta) ; make cmd left key do Meta
+(setq mac-left-command-modifier 'super) ; make left opt key do Super
+(setq mac-right-command-modifier 'hyper)  ; make cmd right key do Hyper
+
+;;(global-set-key (kbd "H-f") 'toggle-evilmode)
+
+(global-set-key (kbd "M-q") 'toggle-truncate-lines)
+
+(global-set-key (kbd "H-k") 'windmove-up)
+(global-set-key (kbd "H-j") 'windmove-down)
+(global-set-key (kbd "H-l") 'windmove-right)
+(global-set-key (kbd "H-h") 'windmove-left)
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
+
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+            (call-interactively #'save-buffer)))
+
+(add-hook 'save-buffer
+          (lambda ()
+            (call-interactively #'evil-insert-state-exit-hook)))
+
+;; moving between windows with Shift + arrows
+;; (windmove-default-keybindings)
+
+
+(global-set-key (kbd "H-l") 'ns-copy-including-secondary)
+
+(map! :map evil-window-map
+      "SPC" #'rotate-layout
+      ;; Navigation
+      "<left>"     #'evil-window-left
+      "<down>"     #'evil-window-down
+      "<up>"       #'evil-window-up
+      "<right>"    #'evil-window-right
+      ;; Swapping windows
+      "C-<left>"       #'+evil/window-move-left
+      "C-<down>"       #'+evil/window-move-down
+      "C-<up>"         #'+evil/window-move-up
+      "C-<right>"      #'+evil/window-move-right)
 
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
 ;; (require 'mu4e)
@@ -70,70 +208,33 @@
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
 
-(setq doom-theme 'doom-dracula)
+(require 'elfeed-goodies)
+(elfeed-goodies/setup)
+(setq elfeed-goodies/entry-pane-size 0.6)
 
-(setq display-time-day-and-date t)
-(display-time)
-(display-time-mode 1)
-;;(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
-
-(setq scroll-conservatively 100)
-
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
-
-(setq display-line-numbers-type t)
-(global-display-line-numbers-mode)
-(setq doom-modeline-enable-word-count t)
-
-;;Highlight current line
-(global-hl-line-mode)
-
-;;Scroll and Tool bar modes
-(recentf-mode 1)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-
-(use-package org-superstar
+(use-package elfeed-org
   :config
-  (setq org-superstar-special-todo-items t)
-  (setq org-hide-leading-stars t)
-  (add-hook 'org-mode-hook (lambda ()
-                             (org-superstar-mode 1))))
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
 
-(setq org-pretty-entities t)
+(map! :leader
+      :desc "Elfeed"
+       "e e" #'elfeed
+       "e u" #'elfeed-update)
 
-(setq org-hide-emphasis-markers t)
+(evil-define-key 'normal elfeed-show-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev
+  (kbd "E") 'email-elfeed-entry
+  (kbd "C") (lambda () (interactive) (org-capture))
+  (kbd "D") 'doi-utils-add-entry-from-elfeed-entry
+  ;; help me alternate fingers in marking entries as read
+  (kbd "F") 'elfeed-search-untag-all-unread
+  (kbd "O") 'elfeed-search-show-entry)
 
-
-(use-package org-appear
-  :hook (org-mode . org-appear-mode))
-
-(with-eval-after-load 'org-superstar
-  (setq org-superstar-item-bullet-alist
-        '((?* . ?•)
-          (?+ . ?➤)
-          (?- . ?-)))
-  (setq org-superstar-special-todo-items t))
-
-(defun evil-normalize-all-buffers ()
-  "Force a drop to normal state."
-  (unless (eq evil-state 'normal)
-    (dolist (buffer (buffer-list))
-      (set-buffer buffer)
-      (unless (or (minibufferp)
-                  (eq evil-state 'emacs))
-        (evil-force-normal-state)))
-    (message "Dropped back to normal state in all buffers")))
-
-(defvar evil-normal-timer
-  (run-with-idle-timer 30 t #'evil-normalize-all-buffers)
-  "Drop back to normal state after idle for 30 seconds.")
-
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-
-(beacon-mode 1)
+(evil-define-key 'normal elfeed-search-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
 
 (setq ispell-program-name "aspell")
 (setq ispell-list-command "list")
@@ -150,283 +251,6 @@
     (ring-insert lang-ring lang)
     (ispell-change-dictionary lang)))
 (global-set-key (kbd "H-m") 'cycle-ispell-languages)
-
-(require 'elfeed-goodies)
-(elfeed-goodies/setup)
-(setq elfeed-goodies/entry-pane-size 0.5)
-
-(use-package elfeed-org
-  :config
-  (elfeed-org)
-  (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
-
-(map! :leader
-      :desc "Elfeed"
-       "e e" #'elfeed
-       "e u" #'elfeed-update)
-
-(evil-define-key 'normal elfeed-show-mode-map
-  (kbd "J") 'elfeed-goodies/split-show-next
-  (kbd "K") 'elfeed-goodies/split-show-prev)
-
-(evil-define-key 'normal elfeed-search-mode-map
-  (kbd "J") 'elfeed-goodies/split-show-next
-  (kbd "K") 'elfeed-goodies/split-show-prev)
-
-(evil-define-key elfeed-show-mode-map
-  (kbd "E") 'email-elfeed-entry
-  (kbd "C") (lambda () (interactive) (org-capture nil "e"))
-  (kbd "D") 'doi-utils-add-entry-from-elfeed-entry
-;; help me alternate fingers in marking entries as read
-  (kbd "F") 'elfeed-search-untag-all-unread
-  (kbd "O") 'elfeed-search-show-entry)
-
-;;(define-key elfeed-show-mode-map  (kbd "M-RET") 'elfeed-search-browse-url) this doesnt work on the current entry...
-
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
-
-(setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
-(setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
-
-(use-package! oc-bibtex :after oc)
-
-(use-package org-roam-bibtex
-  :after (org-roam)
-  :hook (org-roam-mode . org-roam-bibtex-mode)
-  :config
-  (require 'org-ref)
-    (setq orb-preformat-keywords
-    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
-  (setq orb-autokey-format "%A%y")
-  (setq orb-pdf-scrapper-export-fields
-    '("author" "editor" "title" "journal" "date"))
-  (setq orb-templates
-        '(("r" "ref" plain (function org-roam-capture--get-point)
-           ""
-           :file-name "${=key=}"
-           :head "#+TITLE: ${title}\n
-                  #+ROAM_KEY: ${ref}
-
-- tags ::
-- keywords :: ${keywords}\n
-
- * Meta information\n
-        :PROPERTIES:\n
-        :Custom_ID: ${=key=}\n
-        :URL: ${url}\n
-        :AUTHOR: ${author-or-editor}\n
-        :INTERLEAVE_PDF: %(orb-process-file-field \"${=key=}\")\n
-        :INTERLEAVE_PAGE_NOTE: \n
-        :END:\n\n"
-
-        :unnarrowed t)))
-  :bind (:map org-mode-map
-         (("C-c n a" . orb-note-actions))))
-
-(defconst my/bib-libraries
-   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
-   ) ; All of my bib databases.
-
-(defconst my/main-pdfs-library-path
-  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
-
-(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/notes/") ; I use org-roam to manage all my notes, including bib notes.
-
-(use-package! ivy-bibtex
-  :when (modulep! :completion vertico)
-  :defer t
-  :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
-
-(use-package! bibtex-completion
-  :defer t
-  :config
-
-  (setq! bibtex-completion-pdf-field "file"
-         bibtex-completion-additional-search-fields '(("journaltitle")
-                                                     (keywords))
-         bibtex-completion-pdf-symbol "⌘"
-         bibtex-completion-notes-symbol "✎"
-
-         bibtex-completion-display-formats
-         '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
-           (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-           (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-           (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-           (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
-        )
-
-  (setq! bibtex-completion-bibliography my/bib-libraries ; My bibliography files location
-       bibtex-completion-library-path my/main-pdfs-library-path ; My PDF lib location
-       bibtex-completion-notes-path my/bib-notes-dir)
-
-  ;; Opening PDF files outside emacs, by default PDFs open in PDFTools
-  ;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
-  ;;                                            (call-process "open" nil 0 nil fpath))
-  ;;      )
-  )
-
-(global-set-key (kbd "<menu>") 'helm-command-prefix)
-
-(setq reftex-default-bibliography my/bib-libraries)
-
-(setq org-ref-default-bibliography my/bib-libraries
-      org-ref-pdf-directory my/main-pdfs-library-path)
-
-
-
-(use-package org-mac-link)
-
-(use-package! citar
-  :hook (doom-after-init-modules . citar-refresh)
-  :config
-  (require 'citar-org)
-  :custom
-  (org-cite-global-bibliography my/bib-libraries)
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-
-  (citar-bibliography my/bib-libraries)
-  (citar-library-paths my/main-pdfs-library-path)
-  (citar-notes-paths my/bib-notes-dir)
-  (citar-open-note-function 'orb-citar-edit-note)
-
-  (defvar citar-indicator-files-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-faicon
-              "file-o"
-              :face 'all-the-icons-green
-              :v-adjust -0.1)
-     :function #'citar-has-files
-     :padding "  " ; need this because the default padding is too low for these icons
-     :tag "has:files"))
-
-  (defvar citar-indicator-links-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-octicon
-              "link"
-              :face 'all-the-icons-orange
-              :v-adjust 0.01)
-     :function #'citar-has-links
-     :padding "  "
-     :tag "has:links"))
-
-  (defvar citar-indicator-notes-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-material
-              "speaker_notes"
-              :face 'all-the-icons-blue
-              :v-adjust -0.3)
-     :function #'citar-has-notes
-     :padding "  "
-     :tag "has:notes"))
-
-  (defvar citar-indicator-cited-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-faicon
-              "circle-o"
-              :face 'all-the-icon-green)
-     :function #'citar-is-cited
-     :padding "  "
-     :tag "is:cited"))
-
-  (setq citar-indicators citar-indicator-files-icons)
-
-  (setq citar-indicators
-        (list citar-indicator-files-icons
-              citar-indicator-links-icons
-              citar-indicator-notes-icons
-              citar-indicator-cited-icons))
-
-  (citar-templates
-   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
-     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
-     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
-     ))
-  ;; Configuring all-the-icons. From
-  ;; https://github.com/bdarcus/citar#rich-ui
-  (citar-symbols
-   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
-      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
-     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
-           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
-     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
-           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
-  (citar-symbol-separator "  ")
-  :init
-  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
-  ;; Change to your own theme's background(s)
-  (defface kb/citar-icon-dim
-    ;; Change these colors to match your theme. Using something like
-    ;; `face-attribute' to get the value of a particular attribute of a face might
-    ;; be more convenient.
-    '((((background dark)) :foreground "#212428")
-      (((background light)) :foreground "#f0f0f0"))
-    "Face for having icons' color be identical to the theme
-  background when \"not shown\".")
-
-  )
-
-;; (use-package org-ref
-;;     :after org
-;;     )
-(use-package! org-ref)
-
-(require 'openalex)
-(require 'org-ref-ivy)
-;(require 'org-ref-helm)
-(require 'org-ref-arxiv)
-(require 'org-ref-scopus)
-(require 'org-ref-wos)
-
-(define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
-(define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
-(define-key org-mode-map (kbd "s-à") 'org-ref-insert-ref-link)
-(define-key org-mode-map (kbd "s-ç") 'org-ref-insert-label-link)
-(define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
-
-(setq bibtex-autokey-year-length 4
-          bibtex-autokey-name-year-separator "-"
-          bibtex-autokey-year-title-separator "-"
-          bibtex-autokey-titleword-separator "-"
-          bibtex-autokey-titlewords 2
-          bibtex-autokey-titlewords-stretch 1
-          bibtex-autokey-titleword-length 5)
-
-;; * Doom emacs keybinding for inserting org ref link to bibtex entry
-(map! :leader
-      :desc "Org-ref insert link"
-      "i i" #'org-ref-insert-link
-      "i l" #'org-ref-insert-ref-link)
-
-(setq org-ref-notes-function 'orb-edit-notes)
-(setq org-ref-note-title-format
-  "* TODO %y -%t
- :PROPERTIES:
-  :Custom_ID: %k
-  :AUTHOR: %9a
-  :JOURNAL: %j
-  :VOLUME: %v
-  :DOI: %D
-  :URL: %U
- :END:
-
-")
 
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -691,6 +515,329 @@ then exit them."
 			     (insert (cl-fifth (cdr candidate)))) "ascii")
 		      ("L" (lambda (candidate)
 			     (insert (cl-sixth (cdr candidate))) "Latin-1")))))
+
+(global-set-key (kbd "H--") 'org-subscript-region-or-point)
+(global-set-key (kbd "H-=") 'org-superscript-region-or-point)
+(global-set-key (kbd "H-i") 'org-italics-region-or-point)
+(global-set-key (kbd "H-b") 'org-bold-region-or-point)
+(global-set-key (kbd "H-v") 'org-verbatim-region-or-point)
+(global-set-key (kbd "H-c") 'org-code-region-or-point)
+(global-set-key (kbd "H-u") 'org-underline-region-or-point)
+(global-set-key (kbd "H-+") 'org-strikethrough-region-or-point)
+(global-set-key (kbd "H-4") 'org-latex-math-region-or-point)
+(global-set-key (kbd "H-e") 'ivy-insert-org-entity)
+(global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
+(global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
+
+(defun my/org-mode-IC_{50}-autoformat ()
+  "Autoformat IC_{50} as IC_{50} in Org-mode."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "IC_{50}" nil t)
+      (replace-match "IC_{50}"))))
+
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+
+(setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
+(setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
+
+(use-package! org-roam-bibtex
+  :after org-roam
+  :hook (org-roam-mode . org-roam-bibtex-mode)
+  :config
+  (require 'org-ref)
+  (require 'ivy-bibtex)
+  (setq orb-insert-interface 'ivy-bibtex)
+  (setq  bibtex-completion-pdf-field "file")
+  )
+
+(after! org-roam
+  (org-roam-bibtex-mode))
+
+(setq orb-preformat-keywords '("citekey" "author" "date" "year" "keywords" "booktitle" "file"))
+
+(setq orb-templates
+      '((\"r\" \"reference\" plain (function org-roam-capture--get-point)
+         "\n#+ROAM_KEY: cite:%^{citekey}%?
+:AUTHOR: %^{author}
+:DATE: %^{date}
+:YEAR: %^{year}
+#+CREATED: <%<%Y-%m-%d %H:%M:%S>>
+:BOOKTITLE: %^{booktitle}
+#+ROAM_TAGS: %^{keywords}
+#+SOURCE: %^{file}
+[[file:%^{file}][Source file]]
+"
+         :file-name "references/${citekey}"
+         :head "#+TITLE: ${title}"
+         :unnarrowed t)))
+
+(defconst my/bib-libraries
+   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
+   ) ; All of my bib databases.
+
+(defconst my/main-pdfs-library-path
+  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
+
+(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/") ; I use org-roam to manage all my notes, including bib notes.
+
+(defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
+
+(use-package! citar
+  :hook (doom-after-init-modules . citar-refresh)
+  :config
+  (require 'citar-org)
+  :custom
+  (org-cite-global-bibliography my/bib-libraries)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+
+  (citar-bibliography my/bib-libraries)
+  (citar-library-paths my/main-pdfs-library-path)
+  (citar-notes-paths my/bib-notes-dir)
+
+  (citar-citeproc-csl-styles-dir my/csl-dir)
+
+  (citar-open-note-function 'orb-citar-edit-note)
+
+  (citar-templates
+   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
+     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
+     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
+     ))
+  ;; Configuring all-the-icons. From
+  ;; https://github.com/bdarcus/citar#rich-ui
+  (citar-symbols
+   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
+      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
+     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
+           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
+     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
+           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
+  (citar-symbol-separator "  ")
+  :init
+  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
+  ;; Change to your own theme's background(s)
+  (defface kb/citar-icon-dim
+    ;; Change these colors to match your theme. Using something like
+    ;; `face-attribute' to get the value of a particular attribute of a face might
+    ;; be more convenient.
+    '((((background dark)) :foreground "#212428")
+      (((background light)) :foreground "#f0f0f0"))
+    "Face for having icons' color be identical to the theme
+  background when \"not shown\".")
+
+  )
+
+(use-package! oc-bibtex :after oc)
+
+(use-package! ivy-bibtex
+  :when (modulep! :completion vertico)
+  :defer t
+  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus)))
+
+(use-package! bibtex-completion
+  :config
+  (setq bibtex-completion-additional-search-fields '(("journaltitle")
+                                                     (keywords))
+        bibtex-completion-pdf-symbol ""
+        bibtex-completion-notes-symbol ""
+        bibtex-completion-pdf-field "file"
+        bibtex-completion-display-formats
+        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
+
+        )
+  )
+
+(setq bibtex-completion-notes-path my/bib-notes-dir
+      bibtex-completion-bibliography my/bib-libraries
+      bibtex-completion-library-path my/main-pdfs-library-path
+      bibtex-completion-pdf-field "file"
+      bibtex-completion-notes-template-multiple-files
+      (concat
+       "#+title: ${title}\n"
+       "#+roam_key: cite:${=key=}\n"
+       "* ${title}\n"
+       ":PROPERTIES:\n"
+       ":Custom_ID: ${=key=}\n"
+       ":NOTER_DOCUMENT: ~/Dropbox/Research/Papers/${=key=}.pdf\n"
+       ":AUTHOR: ${author-abbrev}\n"
+       ":JOURNAL: ${journaltitle}\n"
+       ":DATE: ${date}\n"
+       ":YEAR: ${year}\n"
+       ":DOI: ${doi}\n"
+       ":URL: ${url}\n"
+       ":END:\n\n"))
+
+
+;; Opening PDF files outside emacs, by default PDFs open in PDFTools
+;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
+;;                                            (call-process "open" nil 0 nil fpath))
+;;      )
+
+(use-package! org-ref
+  :after org
+  (require 'org-ref-ivy))
+
+(defun DDG-this ()
+  "Perform a DuckDuckGo search for the selected text or prompt for input."
+  (interactive)
+  (let ((search-term (if (region-active-p)
+                         (buffer-substring-no-properties (region-beginning) (region-end))
+                       (read-string "Search: "))))
+    (browse-url (format "https://duckduckgo.com/?q=%s" (url-hexify-string search-term)))))
+
+(setq bibtex-autokey-year-length 4
+          bibtex-autokey-name-year-separator "-"
+          bibtex-autokey-year-title-separator "-"
+          bibtex-autokey-titleword-separator "-"
+          bibtex-autokey-titlewords 2
+          bibtex-autokey-titlewords-stretch 1
+          bibtex-autokey-titleword-length 5)
+
+(defun scifinder ()
+  "Open https://scifinder.cas.org/scifinder/view/scifinder/scifinderExplore.jsf in a browser."
+  (interactive)
+  (browse-url   "https://sso-cas-org.lama.univ-amu.fr/as/authorization.oauth2?response_type=code&client_id=scifinder-n&redirect_uri=https%3A%2F%2Fscifinder-n.cas.org%2Fpa%2Foidc%2Fcb&state=eyJ6aXAiOiJERUYiLCJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoicjVEZU5XUTN6TENDNERTdjR6ZDFxakc5eDRZIiwic3VmZml4IjoibWlGS09lLjE2ODcwODI3NzQifQ..gqelHLndPNYd13nUhUc0yg.qq1i9fRNWSb5CK-VzClHUvjp9DZ9hxIR-WMamA9Phg1Ee--s_n0OV_PiUVtFPuESKYKDd2onqlb11tO5qPLP7A.n2MA2ZFpH2NKU1Mvf8ubTA&nonce=FYiL2oWWopZxgdQwskEt7dxmpJ2Gb9KF_c_jSE80I3g&scope=openid%20address%20email%20phone%20profile&vnd_pi_requested_resource=https%3A%2F%2Fscifinder-n.cas.org%2F&vnd_pi_application_name=SciFinder-nIDF"))
+
+(defun pubmed ()
+  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
+  (interactive)
+  (browse-url "https://pubmed.ncbi.nlm.nih.gov/?otool=iframuscdlib"))
+
+(defun bu-amu ()
+  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
+  (interactive)
+  (browse-url "https://univ-amu.summon.serialssolutions.com/#!/search?ho=t&include.ft.matches=f&l=fr-FR&q="))
+
+(defun chatGPT ()
+  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
+  (interactive)
+  (browse-url "https://chat.openai.com"))
+
+(define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
+(define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
+(define-key org-mode-map (kbd "s-à") 'org-ref-insert-ref-link)
+(define-key org-mode-map (kbd "s-ç") 'org-ref-insert-label-link)
+(define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
+
+;; * Doom emacs keybinding for inserting org ref link to bibtex entry
+(map! :leader
+      ;; Inserting
+      :desc "Insert citation"
+      "i i" #'org-ref-insert-link
+      :desc "Insert label"
+      "i l" #'org-ref-insert-ref-link
+      :desc "DOI Add bibtex entry"
+      "i d" #'doi-add-bibtex-entry
+
+      ;; Opening
+      :desc "Scifinder"
+      "o s" #'scifinder
+      :desc "Pubmed"
+      "o m" #'pubmed
+      :desc "BU AMU"
+      "o B" #'bu-amu
+      :desc "Chat GPT"
+      "o c" #'chatGPT
+
+      ;; Searching
+      :desc "Google this"
+      "s g" #'google-this
+      :desc "DuckDuckGo this"
+      "s @" #'DDG-this
+
+      :desc "ORB Actions"
+      "n r @" #'orb-note-actions
+
+      )
+
+(use-package! org-noter
+  :after (:any org pdf-view)
+  :config
+  )
+
+(use-package org-mac-link)
+
+(eval-after-load 'org '(require 'org-pdfview))
+
+(add-to-list 'org-file-apps
+             '("\\.pdf\\'" . (lambda (file link)
+                                     (org-pdfview-open link))))
+
+(pdf-loader-install)
+(use-package pdf-tools
+  :config
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-annot-activate-created-annotations t)
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+  (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
+  (setq pdf-view-resize-factor 1.1)
+  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
+
+(use-package org-noter
+  :after (:any org pdf-view)
+  :config
+  (setq org-noter-always-create-frame t
+        org-noter-separate-notes-from-heading t
+        org-noter-default-heading-title "Page $p$"
+        org-noter-auto-save-last-location t
+        org-noter-separate-notes-from-heading t
+        org-noter-doc-property-in-notes t
+        )
+  (setq
+   ;; The WM can handle splits
+   ;;org-noter-notes-window-location 'other-frame
+   ;; Please stop opening frames
+   ;;org-noter-always-create-frame nil
+   ;; I want to see the whole file
+   org-noter-hide-other nil
+   ;; Everything is relative to the rclone mega
+   org-noter-notes-search-path my/bib-notes-dir
+   )
+
+  )
+(setq org-noter-property-doc-file "INTERLEAVE_PDF"
+      org-noter-property-note-location "INTERLEAVE_PAGE_NOTE")
+
+(defun my/org-ref-open-pdf-at-point ()
+  "Open the pdf for bibtex key under point if it exists."
+  (interactive)
+  (let* ((results (org-ref-get-bibtex-key-and-file))
+         (key (car results))
+         (pdf-file (car (bibtex-completion-find-pdf key))))
+    (if (file-exists-p pdf-file)
+        (org-open-file pdf-file)
+      (message "No PDF found for %s" key))))
+(setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
+
+(add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 
 (use-package! org-gtd
   :after org
@@ -1004,121 +1151,3 @@ then exit them."
 (defun my-org-html-postamble (plist)
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
-
-;; Meta key on apple keyboard
-(setq ns-alternate-modifier 'meta)
-(setq ns-right-alternate-modifier 'none)
-
-;; set keys for Apple keyboard, for emacs in OS X
-(setq mac-control-modifier 'control) ; make Control key do Control
-(setq mac-option-modifier 'meta) ; make cmd left key do Meta
-(setq mac-left-command-modifier 'super) ; make left opt key do Super
-(setq mac-right-command-modifier 'hyper)  ; make cmd right key do Hyper
-
-;;(global-set-key (kbd "H-f") 'toggle-evilmode)
-
-(global-set-key (kbd "M-q") 'toggle-truncate-lines)
-
-(global-set-key (kbd "H-k") 'windmove-up)
-(global-set-key (kbd "H-j") 'windmove-down)
-(global-set-key (kbd "H-l") 'windmove-right)
-(global-set-key (kbd "H-h") 'windmove-left)
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
-
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-
-(add-hook 'save-buffer
-          (lambda ()
-            (call-interactively #'evil-insert-state-exit-hook)))
-
-;; moving between windows with Shift + arrows
-;; (windmove-default-keybindings)
-
-
-(global-set-key (kbd "H-l") 'ns-copy-including-secondary)
-
-(global-set-key (kbd "H--") 'org-subscript-region-or-point)
-(global-set-key (kbd "H-=") 'org-superscript-region-or-point)
-(global-set-key (kbd "H-i") 'org-italics-region-or-point)
-(global-set-key (kbd "H-b") 'org-bold-region-or-point)
-(global-set-key (kbd "H-v") 'org-verbatim-region-or-point)
-(global-set-key (kbd "H-c") 'org-code-region-or-point)
-(global-set-key (kbd "H-u") 'org-underline-region-or-point)
-(global-set-key (kbd "H-+") 'org-strikethrough-region-or-point)
-(global-set-key (kbd "H-4") 'org-latex-math-region-or-point)
-(global-set-key (kbd "H-e") 'ivy-insert-org-entity)
-(global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
-(global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
-
-(map! :map evil-window-map
-      "SPC" #'rotate-layout
-      ;; Navigation
-      "<left>"     #'evil-window-left
-      "<down>"     #'evil-window-down
-      "<up>"       #'evil-window-up
-      "<right>"    #'evil-window-right
-      ;; Swapping windows
-      "C-<left>"       #'+evil/window-move-left
-      "C-<down>"       #'+evil/window-move-down
-      "C-<up>"         #'+evil/window-move-up
-      "C-<right>"      #'+evil/window-move-right)
-
-(eval-after-load 'org '(require 'org-pdfview))
-
-(add-to-list 'org-file-apps
-             '("\\.pdf\\'" . (lambda (file link)
-                                     (org-pdfview-open link))))
-
-(pdf-loader-install)
-(use-package pdf-tools
- :config
- (setq-default pdf-view-display-size 'fit-page)
- (setq pdf-annot-activate-created-annotations t)
- (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
- (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
- (setq pdf-view-resize-factor 1.1)
- (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
- (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
- (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
-(use-package org-noter
-  :config
-  (setq org-noter-always-create-frame t
-        org-noter-separate-notes-from-heading t
-        org-noter-default-heading-title "Page $p$"
-        org-noter-auto-save-last-location t
-        org-noter-separate-notes-from-heading t
-        org-noter-doc-property-in-notes t
-        ))
-(setq org-noter-property-doc-file "INTERLEAVE_PDF"
-      org-noter-property-note-location "INTERLEAVE_PAGE_NOTE")
-
-(defun my/org-ref-open-pdf-at-point ()
-  "Open the pdf for bibtex key under point if it exists."
-  (interactive)
-  (let* ((results (org-ref-get-bibtex-key-and-file))
-         (key (car results))
-         (pdf-file (car (bibtex-completion-find-pdf key))))
-    (if (file-exists-p pdf-file)
-        (org-open-file pdf-file)
-      (message "No PDF found for %s" key))))
-(setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
-
-(add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
-
-(defun my/org-mode-IC_{50}-autoformat ()
-  "Autoformat IC_{50} as IC_{50} in Org-mode."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (search-forward "IC_{50}" nil t)
-      (replace-match "IC_{50}"))))
-
-(add-hook 'org-mode-hook
-          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))

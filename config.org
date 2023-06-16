@@ -8,7 +8,7 @@
 
 * Notes
 ** [[https://github.com/doomemacs/doomemacs/blob/develop/docs/getting%5Fstarted.org#Configure][DoomEmacs config notice]]
-** Interesting config
+** Interesting configs
 https://github.com/nalhasan/emacsconf2020/blob/master/config.org
 https://github.com/WouterSpekkink/dotfiles/blob/master/doom/config.el
 http://www.wouterspekkink.org/academia/writing/tool/doom-emacs/2021/02/27/writing-academic-papers-with-org-mode.html
@@ -323,14 +323,14 @@ Save the buffer after exiting insert mode
 (scimax-toggle-abbrevs 'scimax-chemical-formula-abbreviations +1)
 (scimax-toggle-abbrevs 'scimax-misc-abbreviations +1)
 #+end_src
-* Elfeed
+* [[https://github.com/skeeto/elfeed][Elfeed]]
 ** Elfeed goodies
 #+begin_src emacs-lisp :tangle yes
 (require 'elfeed-goodies)
 (elfeed-goodies/setup)
 (setq elfeed-goodies/entry-pane-size 0.6)
 #+end_src
-** TODO Elfeed-score
+** TODO [[https://github.com/sp1ff/elfeed-score][Elfeed-score]]
 https://www.unwoundstack.com/doc/elfeed-score/curr
 #+begin_src emacs-lisp :tangle no
 (use-package! elfeed-score
@@ -341,7 +341,7 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
 
 (setq elfeed-search-print-entry-function #'elfeed-score-print-entry)
   #+end_src
-** Elfeed-org
+** [[https://github.com/remyhonig/elfeed-org][Elfeed-org]]
 #+begin_src emacs-lisp :tangle yes
 (use-package elfeed-org
   :config
@@ -404,7 +404,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 * Formatting
-** Function from scimax-org.el
+** Function from [[https://github.com/jkitchin/scimax/blob/master/scimax-org.el][scimax-org.el]]
 #+begin_src emacs-lisp :tangle yes
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -744,7 +744,7 @@ The function should accept one argument, a list of BibTeX keys.")
 #+end_src
 Still doesnt work.
 
-* Bibliography: citar and org-ref
+* Bibliography
 https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 ** Paths
 #+begin_src emacs-lisp :tangle yes

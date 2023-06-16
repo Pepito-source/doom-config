@@ -1,5 +1,5 @@
-  (setq user-full-name "Vincent Montero"
-        user-mail-address "vincent_montero@icloud.com")
+(setq user-full-name "Vincent Montero"
+      user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 

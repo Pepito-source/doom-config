@@ -175,3 +175,5 @@
 
 (package! keycast)
 (package! header2)
+
+(package! command-log-mode)

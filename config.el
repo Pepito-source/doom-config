@@ -1,5 +1,5 @@
-  (setq user-full-name "Vincent Montero"
-        user-mail-address "vincent_montero@icloud.com")
+(setq user-full-name "Vincent Montero"
+      user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -20,6 +20,52 @@
   :hook (org-mode . org-auto-tangle-mode)
   :config
   (setq org-auto-tangle-default t))
+
+(require 'cc-mode)
+
+(use-package f)
+(use-package diminish)
+(use-package lispy)
+(use-package aggressive-indent)
+(use-package ibuffer-projectile)
+(use-package ivy-yasnippet
+  :bind ("H-," . ivy-yasnippet))
+(use-package ess-smart-equals)
+
+(add-to-list 'load-path "~/scimax")
+
+(eval-after-load 'bibtex
+  '(progn
+     (require 'bibtex-hotkeys)))
+
+(require 'jupyter)
+(require 'ob-jupyter)
+(require 'scimax-jupyter)
+;;(global-unset-key (kbd "<f12>"))
+(global-set-key (kbd "s-<") 'scimax/body)
+(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
+
+
+(use-package words
+  :bind ("H-w" . words-hydra/body))
+(require 'scimax-ob)
+;; (require 'scimax-autoformat-abbrev)
+(require 'scimax-utils)
+;; (require 'scimax-contacts)
+(require 'scimax-hydra)
+(require 'scimax-statistics)
+(require 'scimax-journal)
+(setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
+
+(easy-menu-add)
+(eval-after-load 'easy-menu
+  '(progn
+     (require 'scimax-notebook)))
+
+(require 'scimax-ivy) ; M-TAB for multiple selection
+(require 'scimax-yas)
+(require 'scimax-elfeed)
+(require 'scimax-spellcheck)
 
 (setq doom-theme 'doom-dracula)
 
@@ -45,6 +91,10 @@
 (recentf-mode 1)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
+
+(after! org
+  (setq org-src-block-faces nil)
+  )
 
 (use-package org-superstar
   :config
@@ -161,52 +211,6 @@
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
 ;; (require 'mu4e)
 (require 'smtpmail)
-
-(require 'cc-mode)
-
-(use-package f)
-(use-package diminish)
-(use-package lispy)
-(use-package aggressive-indent)
-(use-package ibuffer-projectile)
-(use-package ivy-yasnippet
-  :bind ("H-," . ivy-yasnippet))
-(use-package ess-smart-equals)
-
-(add-to-list 'load-path "~/scimax")
-
-(eval-after-load 'bibtex
-  '(progn
-     (require 'bibtex-hotkeys)))
-
-(require 'jupyter)
-(require 'ob-jupyter)
-(require 'scimax-jupyter)
-;;(global-unset-key (kbd "<f12>"))
-(global-set-key (kbd "s-<") 'scimax/body)
-(jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
-
-
-(use-package words
-  :bind ("H-w" . words-hydra/body))
-(require 'scimax-ob)
-;; (require 'scimax-autoformat-abbrev)
-(require 'scimax-utils)
-;; (require 'scimax-contacts)
-(require 'scimax-hydra)
-(require 'scimax-statistics)
-(require 'scimax-journal)
-(setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
-
-(easy-menu-add)
-(eval-after-load 'easy-menu
-  '(progn
-     (require 'scimax-notebook)))
-
-(require 'scimax-ivy) ; M-TAB for multiple selection
-(require 'scimax-yas)
-(require 'scimax-elfeed)
-(require 'scimax-spellcheck)
 
 (require 'elfeed-goodies)
 (elfeed-goodies/setup)
@@ -630,6 +634,10 @@ The function should accept one argument, a list of BibTeX keys.")
       (concat
        "${author} - ${title}\n"
        "#+roam_key: cite:${=key=}\n"
+       "\n"
+       "- tags :: \n"
+       "- keywords :: ${keywords}\n"
+       "\n"
        "* ${title}\n"
        ":PROPERTIES:\n"
        ":Custom_ID: ${=key=}\n"

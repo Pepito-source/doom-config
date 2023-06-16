@@ -1,0 +1,7 @@
+#+title: README
+#+author: Vincent Montero
+#+email: vincent_montero@icloud.com
+
+1. To use my Emacs config, please install Emacs and git clone the doomemacs configuration as explained [[https://github.com/doomemacs/doomemacs#install][here]].
+2. Then replace the files from the .doom directory with the files of this repo and run doom sync in your terminal to load my configuration.
+3. You're good to go !

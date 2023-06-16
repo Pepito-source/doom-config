@@ -668,21 +668,22 @@ The function should accept one argument, a list of BibTeX keys.")
       bibtex-completion-bibliography my/bib-libraries
       bibtex-completion-library-path my/main-pdfs-library-path
       bibtex-completion-pdf-field "file"
-      bibtex-completion-notes-template-multiple-files
-      (concat
-       "#+title: ${title}\n"
-       "#+roam_key: cite:${=key=}\n"
-       "* ${title}\n"
-       ":PROPERTIES:\n"
-       ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-       ":AUTHOR: ${author-abbrev}\n"
-       ":JOURNAL: ${journaltitle}\n"
-       ":DATE: ${date}\n"
-       ":YEAR: ${year}\n"
-       ":DOI: ${doi}\n"
-       ":URL: ${url}\n"
-       ":END:\n\n"))
+      ;; bibtex-completion-notes-template-multiple-files
+      ;; (concat
+      ;;  "#+title: ${title}\n"
+      ;;  "#+roam_key: cite:${=key=}\n"
+      ;;  "* ${title}\n"
+      ;;  ":PROPERTIES:\n"
+      ;;  ":Custom_ID: ${=key=}\n"
+      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+      ;;  ":AUTHOR: ${author-abbrev}\n"
+      ;;  ":JOURNAL: ${journaltitle}\n"
+      ;;  ":DATE: ${date}\n"
+      ;;  ":YEAR: ${year}\n"
+      ;;  ":DOI: ${doi}\n"
+      ;;  ":URL: ${url}\n"
+      ;;  ":END:\n\n")
+      )
 
 
 ;; Opening PDF files outside emacs, by default PDFs open in PDFTools
@@ -768,11 +769,6 @@ The function should accept one argument, a list of BibTeX keys.")
       "n r @" #'orb-note-actions
 
       )
-
-(use-package! org-noter
-  :after (:any org pdf-view)
-  :config
-  )
 
 (use-package org-mac-link)
 

@@ -728,27 +728,6 @@ As such, [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] can b
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
 
 #+end_src
-** Roam Capturing templates
-org-roam capturing templates for default or bibliographic references
-#+begin_src emacs-lisp :tangle no
-(setq org-roam-capture-templates
-      '(("d" "default" plain
-         "%?"
-         :target
-         (file+head
-          "%<%Y%m%d%H%M%S>-${slug}.org"
-          "#+title: ${note-title}\n")
-         :unnarrowed t)
-        ("b" "bibliography" plain
-         "%?"
-         :target
-         (file+head
-          "%(expand-file-name (or citar-org-roam-subdir \"\") org-roam-directory)/${citar-citekey}.org"
-          "#+title: ${citar-citekey} (${citar-date}). ${note-title}.\n#+created: %U\n#+last_modified: %U\n\n")
-         :unnarrowed t)))
-
-#+end_src
-
 ** [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
 This code wraps the bibtex-completion-edit-notes-function to use citar-open-notes instead.
 #+begin_src emacs-lisp :tangle yes
@@ -762,8 +741,6 @@ The function should accept one argument, a list of BibTeX keys.")
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
   (funcall bibtex-completion-edit-notes-function keys))
-
-
 #+end_src
 Still doesnt work.
 
@@ -784,6 +761,7 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 #+end_src
 
 ** [[https://github.com/emacs-citar][Citar]]
+*** Config
 #+begin_src emacs-lisp :tangle yes
 (use-package! citar
   :hook (doom-after-init-modules . citar-refresh)
@@ -831,7 +809,7 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 
   )
 #+end_src
-
+*** Capturing template
 #+begin_src emacs-lisp :tangle yes
 (setq citar-org-roam-note-title-template
       (concat
@@ -880,21 +858,22 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
       bibtex-completion-bibliography my/bib-libraries
       bibtex-completion-library-path my/main-pdfs-library-path
       bibtex-completion-pdf-field "file"
-      bibtex-completion-notes-template-multiple-files
-      (concat
-       "#+title: ${title}\n"
-       "#+roam_key: cite:${=key=}\n"
-       "* ${title}\n"
-       ":PROPERTIES:\n"
-       ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-       ":AUTHOR: ${author-abbrev}\n"
-       ":JOURNAL: ${journaltitle}\n"
-       ":DATE: ${date}\n"
-       ":YEAR: ${year}\n"
-       ":DOI: ${doi}\n"
-       ":URL: ${url}\n"
-       ":END:\n\n"))
+      ;; bibtex-completion-notes-template-multiple-files
+      ;; (concat
+      ;;  "#+title: ${title}\n"
+      ;;  "#+roam_key: cite:${=key=}\n"
+      ;;  "* ${title}\n"
+      ;;  ":PROPERTIES:\n"
+      ;;  ":Custom_ID: ${=key=}\n"
+      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+      ;;  ":AUTHOR: ${author-abbrev}\n"
+      ;;  ":JOURNAL: ${journaltitle}\n"
+      ;;  ":DATE: ${date}\n"
+      ;;  ":YEAR: ${year}\n"
+      ;;  ":DOI: ${doi}\n"
+      ;;  ":URL: ${url}\n"
+      ;;  ":END:\n\n")
+      )
 
 
 ;; Opening PDF files outside emacs, by default PDFs open in PDFTools
@@ -1017,13 +996,6 @@ DOOM emacs keybinding for inserting references
       )
 #+end_src
 
-** Org-noter
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-noter
-  :after (:any org pdf-view)
-  :config
-  )
-#+end_src
 ** Org-mac-link
 #+begin_src emacs-lisp :tangle yes
 (use-package org-mac-link)

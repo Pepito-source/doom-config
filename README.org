@@ -2,6 +2,9 @@
 #+author: Vincent Montero
 #+email: vincent_montero@icloud.com
 
+Welcome to my Doom Emacs configuration !
+It is a combo of two out-of-the-box Emacs configurations, [[https://github.com/doomemacs/doomemacs][Doom]] and [[https://github.com/jkitchin/scimax][Scimax]], since both provide useful tools for an academic workflow.
+
 1. To use my Emacs config, please install Emacs and git clone the doomemacs configuration as explained [[https://github.com/doomemacs/doomemacs#install][here]].
 2. Then replace the files from the .doom directory with the files of this repo and run doom sync in your terminal to load my configuration.
 3. You're good to go !

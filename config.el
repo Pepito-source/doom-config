@@ -558,6 +558,17 @@ then exit them."
 (setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
 
+(require 'citar)
+(require 'citar-org-roam)
+
+(defvar bibtex-completion-edit-notes-function #'citar-open-notes
+  "Function used to edit notes.
+The function should accept one argument, a list of BibTeX keys.")
+
+(defun bibtex-completion-edit-notes (keys)
+  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
+  (funcall bibtex-completion-edit-notes-function keys))
+
 (defconst my/bib-libraries
    (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
    ) ; All of my bib databases.
@@ -683,13 +694,6 @@ then exit them."
   :after org
   :config
   (require 'org-ref-ivy)
-  ;; (require 'citar-org-roam)
-  (setq org-ref-open-notes-at-point 'citar-org-roam--create-capture-note)
-  ;; (setq bibtex-completion-find-note-functions
-  ;;       (lambda ()
-  ;;         (citar-open-note nil)
-  ;;         )
-  ;;       )
   )
 
 (defun DDG-this ()

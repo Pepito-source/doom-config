@@ -750,47 +750,19 @@ org-roam capturing templates for default or bibliographic references
 #+end_src
 
 ** [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
-I can't find a way to make org-roam-bibtex work as I want with the following code:
-#+begin_src emacs-lisp :tangle no
-(use-package! org-roam-bibtex
-  :after org-roam
-  :hook (org-roam-mode . org-roam-bibtex-mode)
-  :config
-  (require 'org-ref)
-  (require 'ivy-bibtex)
-  (setq orb-insert-interface 'ivy-bibtex)
-  (setq  bibtex-completion-pdf-field "file")
-  )
+This code wraps the bibtex-completion-edit-notes-function to use citar-open-notes instead.
+#+begin_src emacs-lisp :tangle yes
+(require 'citar)
+(require 'citar-org-roam)
 
-(after! org-roam
-  (org-roam-bibtex-mode))
+(defvar bibtex-completion-edit-notes-function #'citar-open-notes
+  "Function used to edit notes.
+The function should accept one argument, a list of BibTeX keys.")
 
-(setq orb-preformat-keywords '("citekey" "author" "date" "year" "keywords" "booktitle" "file"))
+(defun bibtex-completion-edit-notes (keys)
+  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
+  (funcall bibtex-completion-edit-notes-function keys))
 
-(setq orb-templates
-      '((\"r\" \"reference\" plain (function org-roam-capture--get-point)
-         "\n#+ROAM_KEY: cite:%^{citekey}%?
-:AUTHOR: %^{author}
-:DATE: %^{date}
-:YEAR: %^{year}
-#+CREATED: <%<%Y-%m-%d %H:%M:%S>>
-:BOOKTITLE: %^{booktitle}
-#+ROAM_TAGS: %^{keywords}
-#+SOURCE: %^{file}
-[[file:%^{file}][Source file]]
-"
-         :file-name "references/${citekey}"
-         :head "#+TITLE: ${title}"
-         :unnarrowed t)))
-#+end_src
-Thus, I'll try to bind the bibtex-completion-edit-notes to citar-org-roam--create-capture-note
-#+begin_src emacs-lisp :tangle no
-(defun my-org-ref-open-bibtex-notes-advice (orig-fun &rest args)
-  "Advice function to execute citar-org-roam--create-capture-note after org-ref-open-bibtex-notes."
-  (apply orig-fun args)
-  (citar-org-roam--create-capture-note))
-
-(advice-add 'org-ref-open-bibtex-notes :after #'my-org-ref-open-bibtex-notes-advice)
 
 #+end_src
 Still doesnt work.
@@ -879,7 +851,6 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
       )
 #+end_src
 
-
 ** Org-cite processors
 #+begin_src emacs-lisp :tangle yes
 (use-package! oc-bibtex :after oc)
@@ -939,13 +910,6 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
   :after org
   :config
   (require 'org-ref-ivy)
-  ;; (require 'citar-org-roam)
-  (setq org-ref-open-notes-at-point 'citar-org-roam--create-capture-note)
-  ;; (setq bibtex-completion-find-note-functions
-  ;;       (lambda ()
-  ;;         (citar-open-note nil)
-  ;;         )
-  ;;       )
   )
 #+end_src
 *** Replace org-ref with org-cite

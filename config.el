@@ -1,5 +1,5 @@
-(setq user-full-name "Vincent Montero"
-      user-mail-address "vincent_montero@icloud.com")
+  (setq user-full-name "Vincent Montero"
+        user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -778,42 +778,12 @@ The function should accept one argument, a list of BibTeX keys.")
              '("\\.pdf\\'" . (lambda (file link)
                                      (org-pdfview-open link))))
 
-(pdf-loader-install)
-(use-package pdf-tools
-  :config
-  (setq-default pdf-view-display-size 'fit-page)
-  (setq pdf-annot-activate-created-annotations t)
-  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-  (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
-  (setq pdf-view-resize-factor 1.1)
-  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
-  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
-  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
+(setq
+ org-noter-notes-search-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references")
+ )
 
-(use-package org-noter
-  :after (:any org pdf-view)
-  :config
-  (setq org-noter-always-create-frame t
-        org-noter-separate-notes-from-heading t
-        org-noter-default-heading-title "Page $p$"
-        org-noter-auto-save-last-location t
-        org-noter-separate-notes-from-heading t
-        org-noter-doc-property-in-notes t
-        )
-  (setq
-   ;; The WM can handle splits
-   ;;org-noter-notes-window-location 'other-frame
-   ;; Please stop opening frames
-   ;;org-noter-always-create-frame nil
-   ;; I want to see the whole file
-   org-noter-hide-other nil
-   ;; Everything is relative to the rclone mega
-   org-noter-notes-search-path my/bib-notes-dir
-   )
-
-  )
-(setq org-noter-property-doc-file "INTERLEAVE_PDF"
-      org-noter-property-note-location "INTERLEAVE_PAGE_NOTE")
+(use-package! org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
 
 (defun my/org-ref-open-pdf-at-point ()
   "Open the pdf for bibtex key under point if it exists."

@@ -79,7 +79,7 @@
 (package! org-gtd)
 
 (package! org-pdfview)
-
+(package! org-pdftools)
 (package! org-noter-pdftools)
 
 (package! aggressive-indent)
@@ -171,3 +171,7 @@
 
 (unpin! citar)
 (package! citar)
+
+
+(package! keycast)
+(package! header2)

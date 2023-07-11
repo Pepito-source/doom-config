@@ -47,8 +47,8 @@ Run elisp:emacs-version to share info
   (setq org-auto-tangle-default t))
 #+end_src
 
-* From [[https://github.com/jkitchin/scimax/tree/master][Scimax]]
-** Packages
+* Emacs packages
+
 #+begin_src emacs-lisp :tangle yes
 (require 'cc-mode)
 #+end_src
@@ -62,7 +62,10 @@ Run elisp:emacs-version to share info
 (use-package ivy-yasnippet
   :bind ("H-," . ivy-yasnippet))
 (use-package ess-smart-equals)
-
+#+end_src
+* From [[https://github.com/jkitchin/scimax/tree/master][Scimax]]
+** Packages
+#+begin_src emacs-lisp :tangle yes
 (add-to-list 'load-path "~/scimax")
 
 (eval-after-load 'bibtex
@@ -161,6 +164,7 @@ Run elisp:emacs-version to share info
 #+end_src
 
 ** Coloring code blocks
+*** Yes
 #+begin_src emacs-lisp :tangle no
 (setq org-src-block-faces '(("emacs-lisp" (:background "LightCyan1" :extend t))
 			     ("sh" (:background "gray90" :extend t))
@@ -168,7 +172,7 @@ Run elisp:emacs-version to share info
 			     ("ipython" (:background "thistle1" :extend t))
 			     ("jupyter-python" (:background "thistle1" :extend t))))
 #+end_src
-
+*** No
 #+begin_src emacs-lisp :tangle yes
 (after! org
   (setq org-src-block-faces nil)
@@ -204,57 +208,9 @@ Run elisp:emacs-version to share info
 (beacon-mode 1)
 #+end_src
 
-* Motion and Keybindings
+* Keybindings
 https://www.masteringemacs.org/article/mastering-key-bindings-emacs
 https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
-** Org Motion
-#+begin_src emacs-lisp :tangle yes
-(map! (:after evil-org
-       :map evil-org-mode-map
-       :n "gk" (cmd! (if (org-on-heading-p)
-                         (org-backward-element)
-                       (evil-previous-visual-line)))
-       :n "gj" (cmd! (if (org-on-heading-p)
-                         (org-forward-element)
-                       (evil-next-visual-line)))))
-
-#+end_src
-** Dired
-#+begin_src emacs-lisp :tangle yes
-(after! dired
-  (setq dired-listing-switches "-alhv"
-        delete-by-moving-to-trash t)
-
-  (map!
-   :map dired-mode-map
-   :n [DEL] #'dired-up-directory)
-  )
-
-#+end_src
-** Evil mode
-Go back to normal mode after 30s of inactivity
-#+begin_src emacs-lisp :tangle yes
-(defun evil-normalize-all-buffers ()
-  "Force a drop to normal state."
-  (unless (eq evil-state 'normal)
-    (dolist (buffer (buffer-list))
-      (set-buffer buffer)
-      (unless (or (minibufferp)
-                  (eq evil-state 'emacs))
-        (evil-force-normal-state)))
-    (message "Dropped back to normal state in all buffers")))
-#+end_src
-#+begin_src emacs-lisp :tangle yes
-(defvar evil-normal-timer
-  (run-with-idle-timer 30 t #'evil-normalize-all-buffers)
-  "Drop back to normal state after idle for 30 seconds.")
-#+end_src
-Save the buffer after exiting insert mode
-#+begin_src emacs-lisp :tangle yes
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-#+end_src
 ** Split right and left command keys
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;; Meta key on apple keyboard
@@ -270,58 +226,10 @@ Save the buffer after exiting insert mode
 (setq mac-left-command-modifier 'super) ; make left opt key do Super
 (setq mac-right-command-modifier 'hyper)  ; make cmd right key do Hyper
 #+END_SRC
-** Toggle Evil Mode
-#+begin_src emacs-lisp :tangle yes
-;;(global-set-key (kbd "H-f") 'toggle-evilmode)
-#+end_src
 ** Toggle truncated lines
 #+begin_src emacs-lisp :tangle yes
 (global-set-key (kbd "M-q") 'toggle-truncate-lines)
 #+end_src
-** Moving around windows
-#+BEGIN_SRC emacs-lisp :tangle yes
-(global-set-key (kbd "H-k") 'windmove-up)
-(global-set-key (kbd "H-j") 'windmove-down)
-(global-set-key (kbd "H-l") 'windmove-right)
-(global-set-key (kbd "H-h") 'windmove-left)
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
-
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-
-(add-hook 'save-buffer
-          (lambda ()
-            (call-interactively #'evil-insert-state-exit-hook)))
-
-;; moving between windows with Shift + arrows
-;; (windmove-default-keybindings)
-
-
-(global-set-key (kbd "H-l") 'ns-copy-including-secondary)
-#+END_SRC
-
-** Windows
-#+begin_src emacs-lisp :tangle yes
-(map! :map evil-window-map
-      "SPC" #'rotate-layout
-      ;; Navigation
-      "<left>"     #'evil-window-left
-      "<down>"     #'evil-window-down
-      "<up>"       #'evil-window-up
-      "<right>"    #'evil-window-right
-      ;; Swapping windows
-      "C-<left>"       #'+evil/window-move-left
-      "C-<down>"       #'+evil/window-move-down
-      "C-<up>"         #'+evil/window-move-up
-      "C-<right>"      #'+evil/window-move-right)
-#+end_src
-
 * TODO Email: mu4e
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
@@ -387,7 +295,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 (setq-default ispell-dictionary "english")
 
 
-(let ((langs '("british" "english" "french" "spanish")))
+(let ((langs '("british" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
   (dolist (elem langs) (ring-insert lang-ring elem)))
 
@@ -410,7 +318,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 * Formatting
-** Function from [[https://github.com/jkitchin/scimax/blob/master/scimax-org.el][scimax-org.el]]
+** Functions from [[https://github.com/jkitchin/scimax/blob/master/scimax-org.el][scimax-org.el]]
 #+begin_src emacs-lisp :tangle yes
 (defun org-markup-region-or-point (type beginning-marker end-marker)
   "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
@@ -695,17 +603,13 @@ then exit them."
 
 ** IC_{50}
 #+begin_src emacs-lisp :tangle yes
-(defun my/org-mode-IC_{50}-autoformat ()
-  "Autoformat IC_{50} as IC_{50} in Org-mode."
+(defun my/org-mode-IC50-autoformat ()
+  "Autoformat IC50 as IC_{50} in Org-mode."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (while (search-forward "IC_{50}" nil t)
+    (while (search-forward "IC50" nil t)
       (replace-match "IC_{50}"))))
-
-(add-hook 'org-mode-hook
-          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))
-
 #+end_src
 
 * Taking Notes: Roam
@@ -754,20 +658,87 @@ Still doesnt work.
 https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 ** Paths
 #+begin_src emacs-lisp :tangle yes
+; All of my bib databases.
 (defconst my/bib-libraries
-   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
-   ) ; All of my bib databases.
+  (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work" "\\.bib$"))
 
+; Load recursively paths to bibliography pdf libraries
+(require 'f)
+
+(defun find-directories-recursively (directory)
+  "Recursively find directories under DIRECTORY."
+  (let ((dirs (f-directories directory)))
+    (apply #'append
+           (mapcar (lambda (dir)
+                     (cons dir (find-directories-recursively dir)))
+                   dirs))))
+
+; Main PDFs directory
 (defconst my/main-pdfs-library-path
-  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
+    (append
+      (find-directories-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/")
+     '(
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/biocodex/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/orphandev/biblio/"
+       )
+     )
+    )
 
-(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/") ; I use org-roam to manage all my notes, including bib notes.
+; I use org-roam to manage all my notes, including bib notes.
+(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/")
 
 (defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
 #+end_src
 
+** [[https://github.com/tmalsburg/helm-bibtex][Bibtex-completion]]
+#+begin_src emacs-lisp :tangle yes
+(use-package! ivy-bibtex
+  :when (modulep! :completion vertico)
+  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
+
+  (setq bibtex-completion-notes-path my/bib-notes-dir
+      bibtex-completion-bibliography my/bib-libraries
+      bibtex-completion-library-path my/main-pdfs-library-path
+      bibtex-completion-pdf-field "file"
+      ;; bibtex-completion-notes-template-multiple-files
+      ;; (concat
+      ;;  "#+title: ${title}\n"
+      ;;  "#+roam_key: cite:${=key=}\n"
+      ;;  "* ${title}\n"
+      ;;  ":PROPERTIES:\n"
+      ;;  ":Custom_ID: ${=key=}\n"
+      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+      ;;  ":AUTHOR: ${author-abbrev}\n"
+      ;;  ":JOURNAL: ${journaltitle}\n"
+      ;;  ":DATE: ${date}\n"
+      ;;  ":YEAR: ${year}\n"
+      ;;  ":DOI: ${doi}\n"
+      ;;  ":URL: ${url}\n"
+      ;;  ":END:\n\n")
+      )
+
+  (setq bibtex-completion-additional-search-fields '(("journaltitle")
+                                                     (keywords))
+        bibtex-completion-pdf-symbol ""
+        bibtex-completion-notes-symbol ""
+        bibtex-completion-pdf-field "file"
+        bibtex-completion-display-formats
+        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
+
+        )
+  )
+
+#+end_src
 ** [[https://github.com/emacs-citar][Citar]]
 *** Config
+
 #+begin_src emacs-lisp :tangle yes
 (use-package! citar
   :hook (doom-after-init-modules . citar-refresh)
@@ -842,55 +813,6 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 ** Org-cite processors
 #+begin_src emacs-lisp :tangle yes
 (use-package! oc-bibtex :after oc)
-#+end_src
-** [[https://github.com/tmalsburg/helm-bibtex][Bibtex-completion]]
-#+begin_src emacs-lisp :tangle yes
-(use-package! ivy-bibtex
-  :when (modulep! :completion vertico)
-  :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
-  (setq bibtex-completion-additional-search-fields '(("journaltitle")
-                                                     (keywords))
-        bibtex-completion-pdf-symbol ""
-        bibtex-completion-notes-symbol ""
-        bibtex-completion-pdf-field "file"
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
-
-        )
-  )
-
-(setq bibtex-completion-notes-path my/bib-notes-dir
-      bibtex-completion-bibliography my/bib-libraries
-      bibtex-completion-library-path my/main-pdfs-library-path
-      bibtex-completion-pdf-field "file"
-      ;; bibtex-completion-notes-template-multiple-files
-      ;; (concat
-      ;;  "#+title: ${title}\n"
-      ;;  "#+roam_key: cite:${=key=}\n"
-      ;;  "* ${title}\n"
-      ;;  ":PROPERTIES:\n"
-      ;;  ":Custom_ID: ${=key=}\n"
-      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-      ;;  ":AUTHOR: ${author-abbrev}\n"
-      ;;  ":JOURNAL: ${journaltitle}\n"
-      ;;  ":DATE: ${date}\n"
-      ;;  ":YEAR: ${year}\n"
-      ;;  ":DOI: ${doi}\n"
-      ;;  ":URL: ${url}\n"
-      ;;  ":END:\n\n")
-      )
-
-
-;; Opening PDF files outside emacs, by default PDFs open in PDFTools
-;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
-;;                                            (call-process "open" nil 0 nil fpath))
-;;      )
-
 #+end_src
 ** [[https://github.com/jkitchin/org-ref][Org-ref]]
 *** Basic
@@ -1012,14 +934,42 @@ DOOM emacs keybinding for inserting references
 #+end_src
 
 * PDFs
-** Open org-to-latex-pdf files in Emacs
+** Open pdf files inside/outside emacs
+*** From LaTeX export
+
 #+begin_src emacs-lisp :tangle yes
 (eval-after-load 'org '(require 'org-pdfview))
-
-(add-to-list 'org-file-apps
-             '("\\.pdf\\'" . (lambda (file link)
-                                     (org-pdfview-open link))))
 #+end_src
+
+*** From bibtex files
+
+**** Outside Emacs
+
+Opening PDF files outside emacs, by default PDFs open in PDFTools:
+
+#+begin_src emacs-lisp :tangle yes
+(setq! bibtex-completion-pdf-open-function  (lambda (fpath)
+                                           (call-process "open" nil 0 nil fpath))
+     )
+#+end_src
+
+**** Inside emacs in vertical split
+
+#+begin_src emacs-lisp :tangle no
+(defun my-pdf-tools-open-function (file)
+  "Open FILE using PDF tools in a vertical split new window."
+  (let ((buffer (find-file-noselect file)))
+    (if (fboundp 'pdf-tools-install)
+        (progn
+          (split-window-right)
+          (other-window 1)
+          (pdf-tools-install))
+      (message "PDF tools not available"))
+    (switch-to-buffer buffer)))
+
+(setq bibtex-completion-pdf-open-function #'my-pdf-tools-open-function)
+#+end_src
+
 ** PDF-tools set-up
 #+begin_src emacs-lisp :tangle no
 (pdf-loader-install)
@@ -1034,17 +984,17 @@ DOOM emacs keybinding for inserting references
   (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
   (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
 #+end_src
+** [[https://github.com/fuxialexander/org-pdftools/tree/master][Org-pdftools]]
+#+begin_src emacs-lisp :tangle yes
+(use-package! org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
+#+end_src
 ** Org-noter
 #+begin_src emacs-lisp :tangle yes
 (setq
  org-noter-notes-search-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references")
  )
 
-#+end_src
-** [[https://github.com/fuxialexander/org-pdftools/tree/master][Org-pdftools]]
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-pdftools
-  :hook (org-mode . org-pdftools-setup-link))
 #+end_src
 ** FIXME Org-noter-pdftools
 There are some issues with org-noter-pdftools : cannot extract article's skeleton.
@@ -1084,7 +1034,7 @@ With a prefix ARG, remove start location."
     )
 #+end_src
 ** Org-ref-open-pdf-at-point
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (defun my/org-ref-open-pdf-at-point ()
   "Open the pdf for bibtex key under point if it exists."
   (interactive)
@@ -1101,36 +1051,53 @@ BUG SOLVING: Essential to make pdf-tools working within emacs.
 #+begin_src emacs-lisp :tangle yes
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 #+end_src
-
-* Getting things done
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-gtd
-  :after org
-  :config
-  ;; where org-gtd will put its files. This value is also the default one.
-  (setq org-gtd-directory (concat my/work-base-dir "gtd/"))
-  ;; package: https://github.com/Malabarba/org-agenda-property
-  ;; this is so you can see who an item was delegated to in the agenda
-  (setq org-agenda-property-list '("DELEGATED_TO"))
-  ;; I think this makes the agenda easier to read
-  (setq org-agenda-property-position 'next-line)
-  ;; package: https://www.nongnu.org/org-edna-el/
-  ;; org-edna is used to make sure that when a project task gets DONE,
-  ;; the next TODO is automatically changed to NEXT.
-  (setq org-edna-use-inheritance t)
-  (org-edna-load)
-  :bind
-  (("C-c d c" . org-gtd-capture) ;; add item to inbox
-   ("C-c d a" . org-agenda-list) ;; see what's on your plate today
-   ("C-c d p" . org-gtd-process-inbox) ;; process entire inbox
-   ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
-   ;; see projects that don't have a NEXT item
-   ("C-c d s" . org-gtd-show-stuck-projects)
-   ;; the keybinding to hit when you're done editing an item in the
-   ;; processing phase
-   ("C-c d f" . org-gtd-clarify-finalize)))
+** Remap keybindings
+Does not work...
+#+begin_src emacs-lisp :tangle no
+(map! :after pdf-tools
+      :map (pdf-view-mode-map pdf-annot-minor-mode-maP)
+      :prefix "SPC j"
+      :desc "Highlight"
+      "h" #'pdf-annot-add-highlight-markup-annotation
+      :desc "Add text"
+      "t" #'pdf-annot-add-text-annotation
+      :desc "Markup"
+      "m" #'pdf-annot-add-markup-annotation
+      :desc "Mouse add text"
+      "T" #'pdf-annot-mouse-add-text-annotation
+      :desc "Squiggly"
+      "s" #'pdf-annot-add-squiggly-markup-annotation
+      :desc "strikeout"
+      "+" #'pdf-annot-add-strikeout-markup-annotation
+      :desc "underline"
+      "u" #'pdf-annot-add-underline-markup-annotation
+      )
 #+end_src
 
+* Presentations
+#+begin_src emacs-lisp :tangle yes
+(defun efs/presentation-setup ()
+  (setq text-scale-mode-amount 3)
+  (org-display-inline-images) ;; Can also use org-startup-with-inline-images
+  (text-scale-mode 1))
+
+(defun efs/presentation-end ()
+  (text-scale-mode 0))
+
+(use-package org-tree-slide
+  :hook ((org-tree-slide-play . efs/presentation-setup)
+         (org-tree-slide-stop .efs/presentation-end))
+  :custom
+  (org-tree-slide-slide-in-effect t)
+  (org-tree-slide-activate-message "Presentation started!")
+  (org-tree-slide-deactivate-message "Presentation finished!")
+  (org-tree-slide-header t)
+  (org-tree-slide-breadcrumbs " // ")
+  (org-image-actual-width nil))
+
+;; (setq face-remapping-alist '((default (:height 2.4) default)
+;;                              (italic (sheight 2.4) italic)))
+#+end_src
 * Org-agenda files
 #+begin_src emacs-lisp :tangle yes
 (after! org
@@ -1488,3 +1455,44 @@ This package conflicts with Doom Emacs jupyter configuration !
 (setq org-html-postamble 'my-org-html-postamble)
 #+END_SRC
 
+* Misc
+** Evil mode
+
+Go back to normal mode after 10s of inactivity
+#+begin_src emacs-lisp :tangle yes
+(defun evil-normalize-all-buffers ()
+  "Force a drop to normal state."
+  (unless (eq evil-state 'normal)
+    (dolist (buffer (buffer-list))
+      (set-buffer buffer)
+      (unless (or (minibufferp)
+                  (eq evil-state 'emacs))
+        (evil-force-normal-state)))
+    (message "Dropped back to normal state in all buffers")))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(defvar evil-normal-timer
+  (run-with-idle-timer 10 t #'evil-normalize-all-buffers)
+  "Drop back to normal state after idle for 30 seconds.")
+#+end_src
+
+Save the buffer after exiting insert mode
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+            (call-interactively #'save-buffer)))
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
+#+end_src
+
+Exit insert mode after saving buffer
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'save-buffer
+          (lambda ()
+            (call-interactively #'evil-insert-state-exit-hook)))
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))
+#+end_src

@@ -120,42 +120,6 @@
 
 (beacon-mode 1)
 
-(map! (:after evil-org
-       :map evil-org-mode-map
-       :n "gk" (cmd! (if (org-on-heading-p)
-                         (org-backward-element)
-                       (evil-previous-visual-line)))
-       :n "gj" (cmd! (if (org-on-heading-p)
-                         (org-forward-element)
-                       (evil-next-visual-line)))))
-
-(after! dired
-  (setq dired-listing-switches "-alhv"
-        delete-by-moving-to-trash t)
-
-  (map!
-   :map dired-mode-map
-   :n [DEL] #'dired-up-directory)
-  )
-
-(defun evil-normalize-all-buffers ()
-  "Force a drop to normal state."
-  (unless (eq evil-state 'normal)
-    (dolist (buffer (buffer-list))
-      (set-buffer buffer)
-      (unless (or (minibufferp)
-                  (eq evil-state 'emacs))
-        (evil-force-normal-state)))
-    (message "Dropped back to normal state in all buffers")))
-
-(defvar evil-normal-timer
-  (run-with-idle-timer 30 t #'evil-normalize-all-buffers)
-  "Drop back to normal state after idle for 30 seconds.")
-
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-
 ;; Meta key on apple keyboard
 (setq ns-alternate-modifier 'meta)
 (setq ns-right-alternate-modifier 'none)
@@ -166,47 +130,7 @@
 (setq mac-left-command-modifier 'super) ; make left opt key do Super
 (setq mac-right-command-modifier 'hyper)  ; make cmd right key do Hyper
 
-;;(global-set-key (kbd "H-f") 'toggle-evilmode)
-
 (global-set-key (kbd "M-q") 'toggle-truncate-lines)
-
-(global-set-key (kbd "H-k") 'windmove-up)
-(global-set-key (kbd "H-j") 'windmove-down)
-(global-set-key (kbd "H-l") 'windmove-right)
-(global-set-key (kbd "H-h") 'windmove-left)
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))
-
-(with-eval-after-load 'evil-maps
-    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
-
-(add-hook 'evil-insert-state-exit-hook
-          (lambda ()
-            (call-interactively #'save-buffer)))
-
-(add-hook 'save-buffer
-          (lambda ()
-            (call-interactively #'evil-insert-state-exit-hook)))
-
-;; moving between windows with Shift + arrows
-;; (windmove-default-keybindings)
-
-
-(global-set-key (kbd "H-l") 'ns-copy-including-secondary)
-
-(map! :map evil-window-map
-      "SPC" #'rotate-layout
-      ;; Navigation
-      "<left>"     #'evil-window-left
-      "<down>"     #'evil-window-down
-      "<up>"       #'evil-window-up
-      "<right>"    #'evil-window-right
-      ;; Swapping windows
-      "C-<left>"       #'+evil/window-move-left
-      "C-<down>"       #'+evil/window-move-down
-      "C-<up>"         #'+evil/window-move-up
-      "C-<right>"      #'+evil/window-move-right)
 
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
 ;; (require 'mu4e)
@@ -245,7 +169,7 @@
 (setq-default ispell-dictionary "english")
 
 
-(let ((langs '("british" "english" "french" "spanish")))
+(let ((langs '("british" "french" "spanish")))
   (setq lang-ring (make-ring (length langs)))
   (dolist (elem langs) (ring-insert lang-ring elem)))
 
@@ -533,16 +457,13 @@ then exit them."
 (global-set-key (kbd "H-\"") 'org-double-quote-region-or-point)
 (global-set-key (kbd "H-'") 'org-single-quote-region-or-point)
 
-(defun my/org-mode-IC_{50}-autoformat ()
-  "Autoformat IC_{50} as IC_{50} in Org-mode."
+(defun my/org-mode-IC50-autoformat ()
+  "Autoformat IC50 as IC_{50} in Org-mode."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (while (search-forward "IC_{50}" nil t)
+    (while (search-forward "IC50" nil t)
       (replace-match "IC_{50}"))))
-
-(add-hook 'org-mode-hook
-          (lambda () (add-hook 'after-save-hook #'my/org-mode-IC_{50}-autoformat nil t)))
 
 (use-package! websocket
     :after org-roam)
@@ -573,16 +494,79 @@ The function should accept one argument, a list of BibTeX keys.")
   "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
   (funcall bibtex-completion-edit-notes-function keys))
 
+; All of my bib databases.
 (defconst my/bib-libraries
-   (directory-files "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-entries/" t "\\.bib$")
-   ) ; All of my bib databases.
+  (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work" "\\.bib$"))
 
+; Load recursively paths to bibliography pdf libraries
+(require 'f)
+
+(defun find-directories-recursively (directory)
+  "Recursively find directories under DIRECTORY."
+  (let ((dirs (f-directories directory)))
+    (apply #'append
+           (mapcar (lambda (dir)
+                     (cons dir (find-directories-recursively dir)))
+                   dirs))))
+
+; Main PDFs directory
 (defconst my/main-pdfs-library-path
-  '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/")) ; Main PDFs directory
+    (append
+      (find-directories-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/")
+     '(
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/biocodex/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/orphandev/biblio/"
+       )
+     )
+    )
 
-(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/") ; I use org-roam to manage all my notes, including bib notes.
+; I use org-roam to manage all my notes, including bib notes.
+(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/")
 
 (defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
+
+(use-package! ivy-bibtex
+  :when (modulep! :completion vertico)
+  :config
+  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
+
+  (setq bibtex-completion-notes-path my/bib-notes-dir
+      bibtex-completion-bibliography my/bib-libraries
+      bibtex-completion-library-path my/main-pdfs-library-path
+      bibtex-completion-pdf-field "file"
+      ;; bibtex-completion-notes-template-multiple-files
+      ;; (concat
+      ;;  "#+title: ${title}\n"
+      ;;  "#+roam_key: cite:${=key=}\n"
+      ;;  "* ${title}\n"
+      ;;  ":PROPERTIES:\n"
+      ;;  ":Custom_ID: ${=key=}\n"
+      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
+      ;;  ":AUTHOR: ${author-abbrev}\n"
+      ;;  ":JOURNAL: ${journaltitle}\n"
+      ;;  ":DATE: ${date}\n"
+      ;;  ":YEAR: ${year}\n"
+      ;;  ":DOI: ${doi}\n"
+      ;;  ":URL: ${url}\n"
+      ;;  ":END:\n\n")
+      )
+
+  (setq bibtex-completion-additional-search-fields '(("journaltitle")
+                                                     (keywords))
+        bibtex-completion-pdf-symbol ""
+        bibtex-completion-notes-symbol ""
+        bibtex-completion-pdf-field "file"
+        bibtex-completion-display-formats
+        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
+
+        )
+  )
 
 (use-package! citar
   :hook (doom-after-init-modules . citar-refresh)
@@ -652,52 +636,6 @@ The function should accept one argument, a list of BibTeX keys.")
       )
 
 (use-package! oc-bibtex :after oc)
-
-(use-package! ivy-bibtex
-  :when (modulep! :completion vertico)
-  :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
-  (setq bibtex-completion-additional-search-fields '(("journaltitle")
-                                                     (keywords))
-        bibtex-completion-pdf-symbol ""
-        bibtex-completion-notes-symbol ""
-        bibtex-completion-pdf-field "file"
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
-
-        )
-  )
-
-(setq bibtex-completion-notes-path my/bib-notes-dir
-      bibtex-completion-bibliography my/bib-libraries
-      bibtex-completion-library-path my/main-pdfs-library-path
-      bibtex-completion-pdf-field "file"
-      ;; bibtex-completion-notes-template-multiple-files
-      ;; (concat
-      ;;  "#+title: ${title}\n"
-      ;;  "#+roam_key: cite:${=key=}\n"
-      ;;  "* ${title}\n"
-      ;;  ":PROPERTIES:\n"
-      ;;  ":Custom_ID: ${=key=}\n"
-      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-      ;;  ":AUTHOR: ${author-abbrev}\n"
-      ;;  ":JOURNAL: ${journaltitle}\n"
-      ;;  ":DATE: ${date}\n"
-      ;;  ":YEAR: ${year}\n"
-      ;;  ":DOI: ${doi}\n"
-      ;;  ":URL: ${url}\n"
-      ;;  ":END:\n\n")
-      )
-
-
-;; Opening PDF files outside emacs, by default PDFs open in PDFTools
-;; (setq! bibtex-completion-pdf-open-function  (lambda (fpath)
-;;                                            (call-process "open" nil 0 nil fpath))
-;;      )
 
 (use-package! org-ref
   :after org
@@ -782,55 +720,40 @@ The function should accept one argument, a list of BibTeX keys.")
 
 (eval-after-load 'org '(require 'org-pdfview))
 
-(add-to-list 'org-file-apps
-             '("\\.pdf\\'" . (lambda (file link)
-                                     (org-pdfview-open link))))
+(setq! bibtex-completion-pdf-open-function  (lambda (fpath)
+                                           (call-process "open" nil 0 nil fpath))
+     )
+
+(use-package! org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
 
 (setq
  org-noter-notes-search-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references")
  )
 
-(use-package! org-pdftools
-  :hook (org-mode . org-pdftools-setup-link))
-
-(defun my/org-ref-open-pdf-at-point ()
-  "Open the pdf for bibtex key under point if it exists."
-  (interactive)
-  (let* ((results (org-ref-get-bibtex-key-and-file))
-         (key (car results))
-         (pdf-file (car (bibtex-completion-find-pdf key))))
-    (if (file-exists-p pdf-file)
-        (org-open-file pdf-file)
-      (message "No PDF found for %s" key))))
-(setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
-
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 
-(use-package! org-gtd
-  :after org
-  :config
-  ;; where org-gtd will put its files. This value is also the default one.
-  (setq org-gtd-directory (concat my/work-base-dir "gtd/"))
-  ;; package: https://github.com/Malabarba/org-agenda-property
-  ;; this is so you can see who an item was delegated to in the agenda
-  (setq org-agenda-property-list '("DELEGATED_TO"))
-  ;; I think this makes the agenda easier to read
-  (setq org-agenda-property-position 'next-line)
-  ;; package: https://www.nongnu.org/org-edna-el/
-  ;; org-edna is used to make sure that when a project task gets DONE,
-  ;; the next TODO is automatically changed to NEXT.
-  (setq org-edna-use-inheritance t)
-  (org-edna-load)
-  :bind
-  (("C-c d c" . org-gtd-capture) ;; add item to inbox
-   ("C-c d a" . org-agenda-list) ;; see what's on your plate today
-   ("C-c d p" . org-gtd-process-inbox) ;; process entire inbox
-   ("C-c d n" . org-gtd-show-all-next) ;; see all NEXT items
-   ;; see projects that don't have a NEXT item
-   ("C-c d s" . org-gtd-show-stuck-projects)
-   ;; the keybinding to hit when you're done editing an item in the
-   ;; processing phase
-   ("C-c d f" . org-gtd-clarify-finalize)))
+(defun efs/presentation-setup ()
+  (setq text-scale-mode-amount 3)
+  (org-display-inline-images) ;; Can also use org-startup-with-inline-images
+  (text-scale-mode 1))
+
+(defun efs/presentation-end ()
+  (text-scale-mode 0))
+
+(use-package org-tree-slide
+  :hook ((org-tree-slide-play . efs/presentation-setup)
+         (org-tree-slide-stop .efs/presentation-end))
+  :custom
+  (org-tree-slide-slide-in-effect t)
+  (org-tree-slide-activate-message "Presentation started!")
+  (org-tree-slide-deactivate-message "Presentation finished!")
+  (org-tree-slide-header t)
+  (org-tree-slide-breadcrumbs " // ")
+  (org-image-actual-width nil))
+
+;; (setq face-remapping-alist '((default (:height 2.4) default)
+;;                              (italic (sheight 2.4) italic)))
 
 (after! org
   (setq org-agenda-files (append
@@ -1118,3 +1041,31 @@ The function should accept one argument, a list of BibTeX keys.")
 (defun my-org-html-postamble (plist)
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
+
+(defun evil-normalize-all-buffers ()
+  "Force a drop to normal state."
+  (unless (eq evil-state 'normal)
+    (dolist (buffer (buffer-list))
+      (set-buffer buffer)
+      (unless (or (minibufferp)
+                  (eq evil-state 'emacs))
+        (evil-force-normal-state)))
+    (message "Dropped back to normal state in all buffers")))
+
+(defvar evil-normal-timer
+  (run-with-idle-timer 10 t #'evil-normalize-all-buffers)
+  "Drop back to normal state after idle for 30 seconds.")
+
+(add-hook 'evil-insert-state-exit-hook
+          (lambda ()
+            (call-interactively #'save-buffer)))
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-i") 'evil-normal-state))
+
+(add-hook 'save-buffer
+          (lambda ()
+            (call-interactively #'evil-insert-state-exit-hook)))
+
+(with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "s-s") 'evil-normal-state))

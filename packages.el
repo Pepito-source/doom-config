@@ -177,3 +177,4 @@
 (package! header2)
 
 (package! command-log-mode)
+(package! org-tree-slide)

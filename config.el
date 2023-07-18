@@ -66,6 +66,7 @@
 (require 'scimax-yas)
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
+(require 'scimax-apps)
 
 (setq doom-theme 'doom-dracula)
 
@@ -119,6 +120,8 @@
   (setq org-superstar-special-todo-items t))
 
 (beacon-mode 1)
+
+(setq org-startup-with-inline-images nil)
 
 ;; Meta key on apple keyboard
 (setq ns-alternate-modifier 'meta)
@@ -743,9 +746,9 @@ The function should accept one argument, a list of BibTeX keys.")
 
 (use-package org-tree-slide
   :hook ((org-tree-slide-play . efs/presentation-setup)
-         (org-tree-slide-stop .efs/presentation-end))
+         (org-tree-slide-stop . efs/presentation-end))
   :custom
-  (org-tree-slide-slide-in-effect t)
+  (org-tree-slide-slide-in-effect nil)
   (org-tree-slide-activate-message "Presentation started!")
   (org-tree-slide-deactivate-message "Presentation finished!")
   (org-tree-slide-header t)
@@ -1041,6 +1044,12 @@ The function should accept one argument, a list of BibTeX keys.")
 (defun my-org-html-postamble (plist)
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
+
+(setq org-file-apps
+   '(
+     ("\\.docx\\'" . default)
+     ("\\.pptx\\'" . default)
+     ))
 
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."

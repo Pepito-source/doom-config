@@ -100,6 +100,7 @@ Run elisp:emacs-version to share info
 (require 'scimax-yas)
 (require 'scimax-elfeed)
 (require 'scimax-spellcheck)
+(require 'scimax-apps)
 #+end_src
 ** TODO Autoformat
 #+begin_src emacs-lisp :tangle no
@@ -208,6 +209,10 @@ Run elisp:emacs-version to share info
 (beacon-mode 1)
 #+end_src
 
+** Inline images
+#+begin_src emacs-lisp :tangle yes
+(setq org-startup-with-inline-images nil)
+#+end_src
 * Keybindings
 https://www.masteringemacs.org/article/mastering-key-bindings-emacs
 https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
@@ -1086,9 +1091,9 @@ Does not work...
 
 (use-package org-tree-slide
   :hook ((org-tree-slide-play . efs/presentation-setup)
-         (org-tree-slide-stop .efs/presentation-end))
+         (org-tree-slide-stop . efs/presentation-end))
   :custom
-  (org-tree-slide-slide-in-effect t)
+  (org-tree-slide-slide-in-effect nil)
   (org-tree-slide-activate-message "Presentation started!")
   (org-tree-slide-deactivate-message "Presentation finished!")
   (org-tree-slide-header t)
@@ -1455,6 +1460,16 @@ This package conflicts with Doom Emacs jupyter configuration !
 (setq org-html-postamble 'my-org-html-postamble)
 #+END_SRC
 
+* Opening files
+** MS files
+
+#+begin_src emacs-lisp :tangle yes
+ (setq org-file-apps
+    '(
+      ("\\.docx\\'" . default)
+      ("\\.pptx\\'" . default)
+      ))
+#+end_src
 * Misc
 ** Evil mode
 

@@ -62,9 +62,11 @@
    :repo "jkitchin/ox-ipynb"
    :files ("*.el")))
 
-(package! org-ref :recipe
+(package! org-ref
+  :recipe
   (:host github
    :repo "jkitchin/org-ref"))
+
 (package! pretty-hydra)
 
 (package! hydra)
@@ -129,9 +131,6 @@
 (package! dash)
 (package! s)
 
-(package! hydra)
-
-(package! org-ai)
 
 ;; Biblio
 (unpin! org-roam bibtex-completion helm-bibtex ivy-bibtex)
@@ -142,17 +141,14 @@
 ;; From Ivy module
 (package! swiper)
 (package! ivy)
-(package! helm)
 (package! ivy-hydra)
 (package! ivy-avy)
 (package! counsel)
 
 (package! bibtex-completion)
 (package! ivy-bibtex)
-(package! helm-bibtex)
 (package! ivy-xref)
 (package! ivy-yasnippet)
-(package! helm-xref)
 
 (package! amx :pin "37f9c7ae55eb0331b27200fb745206fc58ceffc0")
 (package! counsel-projectile :pin "40d1e1d4bb70acb00fddd6f4df9778bf2c52734b")
@@ -168,10 +164,6 @@
   (package! ivy-posframe :pin "533a8e368fcabfd534761a5c685ce713376fa594"))
 
 (package! all-the-icons-ivy :pin "a70cbfa1effe36efc946a823a580cec686d5e88d")
-
-(unpin! citar)
-(package! citar)
-
 
 (package! keycast)
 (package! header2)

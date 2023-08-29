@@ -643,7 +643,7 @@ As such, [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] can b
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
 
 #+end_src
-** [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
+** Citar [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
 This code wraps the bibtex-completion-edit-notes-function to use citar-open-notes instead.
 #+begin_src emacs-lisp :tangle yes
 (require 'citar)
@@ -757,7 +757,7 @@ https://blog.tecosaur.com/tmio/2021-07-31-citations.html
 
   (citar-bibliography my/bib-libraries)
   (citar-library-paths my/main-pdfs-library-path)
-  (citar-notes-paths my/bib-notes-dir)
+  (citar-notes-paths (list my/bib-notes-dir))
 
   (citar-citeproc-csl-styles-dir my/csl-dir)
 
@@ -1299,7 +1299,6 @@ Keep relative and absolute paths from org-cite
 (add-to-list 'org-latex-packages-alist '("" "textgreek" t)) ; Use upright greek letters as text symbols, e.g. \textbeta
 (add-to-list 'org-latex-packages-alist '("" "chemnum" t))   ; A method for numbering chemical compounds
 (add-to-list 'org-latex-packages-alist '("" "bpchem" t)) ;numbering molecules with \CNref
-(add-to-list 'org-latex-packages-alist '("" "chemnum" t))
 #+end_src
 
 **** Other
@@ -1336,7 +1335,7 @@ Keep relative and absolute paths from org-cite
                      [PACKAGES]
                      [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
-                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsection{%s}" . "\\subsection*{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
@@ -1371,7 +1370,7 @@ Keep relative and absolute paths from org-cite
                      [PACKAGES]
                      [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
-                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsection{%s}" . "\\subsection*{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
@@ -1384,16 +1383,79 @@ Keep relative and absolute paths from org-cite
                      [PACKAGES]
                      [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
-                    ("\\subsection{%s}" "\\newpage" "\\subsection*{%s}" "\\newpage")
+                    ("\\subsection{%s}" . "\\subsection*{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
                     ))
 
+     (add-to-list 'org-latex-classes
+                  '("rsc"
+                    "\\documentclass[twoside,twocolumn,9pt]{article}
+\\usepackage{extsizes}
+\\usepackage[super,sort&compress,comma]{natbib}
+\\usepackage[version=3]{mhchem}
+\\usepackage{bpchem}
+\\usepackage[left=1.5cm, right=1.5cm, top=1.785cm, bottom=2.0cm]{geometry}
+\\usepackage{balance}
+\\usepackage{mathptmx}
+\\usepackage{sectsty}
+\\usepackage{graphicx}
+\\usepackage{lastpage}
+\\usepackage[format=plain,justification=justified,singlelinecheck=false,font={stretch=1.125,small,sf},labelfont=bf,labelsep=space]{caption}
+\\usepackage{float}
+\\usepackage{fancyhdr}
+\\usepackage{fnpos}
+\\usepackage[english]{babel}
+\\addto{\captionsenglish}{%
+  \\renewcommand{\refname}{Notes and references}
+}
+\\usepackage{array}
+\\usepackage{droidsans}
+\\usepackage{charter}
+\\usepackage[T1]{fontenc}
+\\usepackage[usenames,dvipsnames]{xcolor}
+\\usepackage{setspace}
+\\usepackage[compact]{titlesec}
+\\usepackage{hyperref}
+%%%Please don't disable any packages in the preamble, as this may cause the template to display incorrectly.%%%
+
+
+\\usepackage{epstopdf}%This line makes .eps figures into .pdf - please comment out if not required.
+
+\\definecolor{cream}{RGB}{222,217,201}
+
+\\usepackage{pdfpages}
+                     [NO-DEFAULT-PACKAGES]
+                     [NO-PACKAGES]
+                     [NO-EXTRA]"
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" . "\\subsection*{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+                    ))
+
+
      )
 #+end_src
 
-*** Export glossaries & acronyms
+*** Export with Biber
+#+begin_src emacs-lisp :tangle yes
+(defun my-org-export-to-pdf-biber ()
+  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
+  (interactive)
+  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
+                                           org-ref-acronyms-before-parsing))
+        (org-latex-pdf-process
+         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "biber %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+    (org-latex-export-to-pdf)
+    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
+#+end_src
+*** Export with glossaries & acronyms
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-export-to-pdf-gloss-bibtex ()
   "Export the current buffer to PDF using Org mode and open the resulting PDF file."
@@ -1403,10 +1465,14 @@ Keep relative and absolute paths from org-cite
         (org-latex-pdf-process
          '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
            "bibtex %b"
-           "makeglossaries %b"
            "makeindex %b"
+           "makeglossaries %b"
            "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "makeindex %b"
+           "makeglossaries %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           )))
     (org-latex-export-to-pdf)
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 #+end_src
@@ -1420,10 +1486,14 @@ Keep relative and absolute paths from org-cite
         (org-latex-pdf-process
          '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
            "biber %b"
-           "makeglossaries %b"
            "makeindex %b"
+           "makeglossaries %b"
            "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           "makeindex %b"
+           "makeglossaries %b"
+           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+           )))
     (org-latex-export-to-pdf)
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 #+end_src
@@ -1601,7 +1671,7 @@ https://kitchingroup.cheme.cmu.edu/blog/2014/10/11/Abbreviated-journal-names-in-
     ("JPP" "Journal of Pharmacy and Pharmacology" "J. Pharm. Pharmacol.")
     ("JPET" "Journal of Pharmacology and Experimental Therapeutics" "J. Pharmacol. Exp. Ther.")
     ("JPBA" "Journal of Pharmaceutical and Biomedical Analysis" "J. Pharm. Biomed. Anal.")
-    ("Journal of Physiology and Pharmacology" "J. Physiol. Pharmacol.")
+    ("JPP" "Journal of Physiology and Pharmacology" "J. Physiol. Pharmacol.")
     ("JNCI" "JNCI Journal of the National Cancer Institute" "JNCI-J. Natl. Cancer Inst.")
     ("JOSS" "Journal of Open Source Software" "J. Open Source Softw.")
     ("JORGCHEM" "The Journal of Organic Chemistry" "J. Org. Chem.")
@@ -1708,21 +1778,6 @@ https://kitchingroup.cheme.cmu.edu/blog/2014/10/11/Abbreviated-journal-names-in-
 (bibtex-map-entries 'jmax-stringify-journal-name)
 #+end_src
 
-*** Biber
-#+begin_src emacs-lisp :tangle yes
-(defun my-org-export-to-pdf-biber ()
-  "Export the current buffer to PDF using Org mode and open the resulting PDF file."
-  (interactive)
-  (let ((org-export-before-parsing-hook '(org-ref-glossary-before-parsing
-                                           org-ref-acronyms-before-parsing))
-        (org-latex-pdf-process
-         '("pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-           "biber %b"
-           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f"
-           "pdflatex -interaction nonstopmode -shell-escape -output-directory %o %f")))
-    (org-latex-export-to-pdf)
-    (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
-#+end_src
 *** Default image size
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-image-default-width nil)

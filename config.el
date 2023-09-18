@@ -1,5 +1,5 @@
-(setq user-full-name "Vincent Montero"
-      user-mail-address "vincent_montero@icloud.com")
+  (setq user-full-name "Vincent Montero"
+        user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -521,6 +521,7 @@ The function should accept one argument, a list of BibTeX keys.")
        "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/biocodex/biblio/"
        "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/biblio/"
        "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/orphandev/biblio/"
+       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/pharmacovigilance/biblio/"
        )
      )
     )
@@ -818,72 +819,69 @@ The function should accept one argument, a list of BibTeX keys.")
       )
 
 (setq org-latex-default-packages-alist
-      '(("AUTO" "inputenc" t)   ;; this is for having good fonts
+      '(
+        ("" "graphicx" nil)       ;; For including images and graphics.
+        ("" "longtable" nil)      ;; For creating tables that span multiple pages.
+        ("T1" "fontenc" nil)      ;; For specifying font encoding.
+        ("AUTO" "inputenc" nil)   ;; For specifying the input encoding, typically UTF-8.
         ("" "lmodern" nil)      ;; This is for handling accented characters
-        ("T1" "fontenc" t)      ;; This makes standard margins
-        ("top=1in, bottom=1.in, left=1in, right=1in" "geometry" nil)
-        ("" "graphicx" t)
-        ("" "longtable" nil)
-        ("" "float" nil)
-        ("" "wrapfig" nil)	  ;makes it possible to wrap text around figures
-        ("" "rotating" nil)
-        ("normalem" "ulem" t)
+        ("" "textcomp" nil)     ;; Provides additional symbols and text-related commands.
+        ("" "amsmath" nil)      ;; Fundamental for mathematical formatting and equations.
+        ("linktocpage, pdfstartview=FitH, colorlinks, linkcolor=blue, anchorcolor=blue, citecolor=blue, filecolor=blue, menucolor=blue, urlcolor=blue" "hyperref" nil) ;; Adds support for hyperlinks within the document when exporting to PDF.
+        ("top=1in, bottom=1.in, left=1in, right=1in" "geometry" nil) ;; For setting page dimensions and margins.
+        ("" "setspace" nil)     ;; Allows adjusting line spacing. /!\ Conflict with biblatex in beamer ?????
+        ("" "xcolor" nil)       ;; For color support in the document.
+        ("" "indentfirst" ni)   ;; Indents the first paragraph of each section.
+        ("numbers,super,sort&compress" "natbib" nil) ;; For bibliographic citations and references.
+        ("" "enumitem" nil)     ;; Control layout of itemize, enumerate, description, Customizes the formatting of lists (enumerate, itemize).
+        ("" "tabularx" nil)     ;; Enhanced support for tables with variable column widths.
+        ("" "calc" nil)         ;; Adds mathematical calculations to LaTeX commands.
+        ("" "ifthen" nil)       ;; Provides conditional commands.
+        ("" "listings" nil)     ;; For formatting code listings.
+        ("" "float" nil)        ;; Improves the formatting of floating elements like figures and tables.
+        ("" "fancyvrb" nil)     ;; Enhances the formatting of verbatim text.
+        ("" "amssymb" nil)      ;; Provides additional mathematical symbols.
+        ("" "amsthm" nil)       ;; Adds support for theorems and theorem-like environments.
+        ("" "parskip" nil)      ;; Adjusts paragraph spacing and indentation.
+        ("" "footmisc" nil)     ;; Customizes footnote formatting.
+        ("" "textgreek" nil)    ;; Allows input of Greek characters in text mode.
+        ("" "babel" nil)        ;; For multilingual support and language-specific formatting.
+        ("" "csquotes" nil)     ;; Enhances quotation marks and citation styles.
+        ("" "url" nil)          ;; Allows formatting of URLs.
+        )
+      )
 
-        ;; These provide math symbols
-        ("" "amsmath" t)
-        ("" "textcomp" t)
-        ("" "marvosym" t)
-        ("" "wasysym" t)
-        ("" "amssymb" t)
-        ("" "amsmath" t)
-        ("theorems, skins" "tcolorbox" t)
+(add-to-list 'org-latex-packages-alist '("" "marginnote" nil))  ;; For left column
+(add-to-list 'org-latex-packages-alist '("" "marginfix" nil))   ;; For command \clearmargin for manually moving the left column to the next page
+(add-to-list 'org-latex-packages-alist '("" "fancyhdr" nil))    ;; Extensive control of page headers and footers in LATEX2ε
+(add-to-list 'org-latex-packages-alist '("" "lastpage" nil))    ;; Reference last page for Page N of M type footers
+(add-to-list 'org-latex-packages-alist '("" "etoolbox" nil))    ;; for \AtBeginDocument etc.
+(add-to-list 'org-latex-packages-alist '("" "tabto" nil))       ;; To use tab for alignment on first page
+(add-to-list 'org-latex-packages-alist '("" "totcount" nil))    ;; To enable extracting the value of the counter "page"
+(add-to-list 'org-latex-packages-alist '("" "ragged2e" nil))    ;; For command \justifying
+(add-to-list 'org-latex-packages-alist '("" "pbox" nil))        ;; For biography environment
+(add-to-list 'org-latex-packages-alist '("" "enotez" nil))      ;; For endnotes
+(add-to-list 'org-latex-packages-alist '("" "rotating" nil))    ;; Rotation tools, including rotated full-page floats
 
-        ;; used for marking up chemical formulars
-        ("version=3" "mhchem" t)
+(add-to-list 'org-latex-packages-alist '("right" "lineno" t))           ;; Line numbers on paragraphs
+(add-to-list 'org-latex-packages-alist '("" "soul" nil))                ;; To highlight text
+(add-to-list 'org-latex-packages-alist '("normalem" "ulem" nil))        ;; Package for underlining
+(add-to-list 'org-latex-packages-alist '("" "microtype" nil))           ;; For command \textls[]{}
+(add-to-list 'org-latex-packages-alist '("strings" "underscore" nil))
+(add-to-list 'org-latex-packages-alist '("" "marvosym" t))              ;; Martin Vogel's Symbols (marvosym) font, contains the Euro currency symbol
+(add-to-list 'org-latex-packages-alist '("" "wasysym" t))               ;; support for the wasy fonts (Waldi Symbol) by Roland Waldi provides many glyphs like male and female symbols and astronomical symbols
 
-        ;; bibliography
-        ("numbers,super,sort&compress" "natbib" nil)
-        ("" "natmove" nil)
-        ("" "url" nil)
+(add-to-list 'org-latex-packages-alist '("" "natmove" nil))     ;; The package has only one purpose: to move superscripted citations beyond punctuation
 
-        ;; this is used for syntax highlighting of code
-        ("cache=false" "minted" nil)
-
-        ;; this allows you to use underscores in places like filenames. I still wouldn't do it.
-        ("strings" "underscore" nil)
-        ("linktocpage, pdfstartview=FitH, colorlinks, linkcolor=blue, anchorcolor=blue, citecolor=blue, filecolor=blue, menucolor=blue, urlcolor=blue"
-         "hyperref" nil)
-
-        ;; enables you to embed files in pdfs
-        ("" "attachfile" nil)
-
-        ;; set default spacing CONFLICT WITH BIBLATEX IN BEAMER
-        ;;("" "setspace" nil)
-
-))
-
-(add-to-list 'org-latex-packages-alist '("" "indentfirst" nil))     ; Indent first paragraph after section header
-(add-to-list 'org-latex-packages-alist '("right" "lineno" nil))          ; Line numbers on paragraphs
-(add-to-list 'org-latex-packages-alist '("" "enumitem" nil))  ; Control layout of itemize, enumerate, description
-
-(add-to-list 'org-latex-packages-alist '("" "soul" nil))             ; To highlight text
-(add-to-list 'org-latex-packages-alist '("" "microtype" nil))       ; For command \textls[]{}
-
-(add-to-list 'org-latex-packages-alist '("" "marginnote" nil))       ; For left column
-(add-to-list 'org-latex-packages-alist '("" "marginfix" nil)) ; For command \clearmargin for manually moving the left column to the next page
-(add-to-list 'org-latex-packages-alist '("" "fancyhdr" nil)) ; Extensive control of page headers and footers in LATEX2ε
-(add-to-list 'org-latex-packages-alist '("" "lastpage" nil)) ; Reference last page for Page N of M type footers
-(add-to-list 'org-latex-packages-alist '("" "etoolbox" nil))  ; for \AtBeginDocument etc.
-(add-to-list 'org-latex-packages-alist '("" "tabto" nil))     ; To use tab for alignment on first page
-(add-to-list 'org-latex-packages-alist '("" "totcount" nil)) ; To enable extracting the value of the counter "page"
-(add-to-list 'org-latex-packages-alist '("" "ragged2e" nil))   ; For command \justifying
-(add-to-list 'org-latex-packages-alist '("" "pbox" nil))       ; For biography environment
-(add-to-list 'org-latex-packages-alist '("" "enotez" nil))    ; For endnotes
+(add-to-list 'org-latex-packages-alist '("" "url" nil))
 
 (add-to-list 'org-latex-packages-alist '("" "pdfpages" nil))           ; Include PDF documents in LATEX
+(add-to-list 'org-latex-packages-alist '("" "attachfile" nil))  ;; Attach arbitrary files to a PDF document
 
-(add-to-list 'org-latex-packages-alist '("" "adjustbox" t))
+(add-to-list 'org-latex-packages-alist '("" "adjustbox" nil))     ;; Graphics package-alike macros for “general” boxes
 (add-to-list 'org-latex-packages-alist '("skip=0.5 \\baselineskip" "caption" nil)) ; Customising captions in floating environments
+(add-to-list 'org-latex-packages-alist '("" "float" nil))       ;; Improved interface for floating objects
+(add-to-list 'org-latex-packages-alist '("" "wrapfig" nil))     ;; makes it possible to wrap text around figures
 
 (add-to-list 'org-latex-packages-alist '("" "epstopdf" nil)) ; Convert EPS to PDF using Ghostscript
 (add-to-list 'org-latex-packages-alist '("" "tikz" nil))            ; For \foreach used for Orcid icon
@@ -892,31 +890,28 @@ The function should accept one argument, a list of BibTeX keys.")
 
 (add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
-(add-to-list 'org-latex-packages-alist '("" "booktabs" t))  ; for \toprule etc. in tables
+(add-to-list 'org-latex-packages-alist '("" "booktabs" nil))  ; for \toprule etc. in tables
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
 (add-to-list 'org-latex-packages-alist '("" "array" nil))      ; For table array
 (add-to-list 'org-latex-packages-alist '("" "xcolor, colortbl" nil)) ; To provide color for soul (for english editing), for adding cell color of table
+(add-to-list 'org-latex-packages-alist '("" "longtable" nil))   ;; Allow tables to flow over page boundaries
 (setq org-latex-tables-booktabs t)
 
-(add-to-list 'org-latex-packages-alist '("" "calc" nil))            ; Simple arithmetic in LATEX commands
-(add-to-list 'org-latex-packages-alist '("" "mathpazo" nil))  ; Fonts to typeset mathematics to match Palatino
-(add-to-list 'org-latex-packages-alist '("" "upgreek" nil))    ; For making greek letters not italic
-(add-to-list 'org-latex-packages-alist '("" "attrib" nil))     ; For XML2PDF use \tag{} for equation
+(add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
+(add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
+
+(add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t)) ; provides commands for typesetting chemical molecular formulae and equations.
+(add-to-list 'org-latex-packages-alist '("" "chemmacros" t)) ; A collection of macros to support typesetting chemistry documents, nomenclature commands, oxidation numbers, thermodynamic data, newman projections, etc.
+(add-to-list 'org-latex-packages-alist '("" "chemnum" t))   ; A method for numbering chemical compounds
+(add-to-list 'org-latex-packages-alist '("" "bpchem" t)) ;numbering molecules with \CNref
 
 (setq org-latex-listings 'minted)
 (setq org-latex-custom-lang-environments
             '((emacs-lisp "common-lispcode")))
 
-(add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t)) ; provides commands for typesetting chemical molecular formulae and equations.
-(add-to-list 'org-latex-packages-alist '("" "chemmacros" t)) ; A collection of macros to support typesetting chemistry documents, nomenclature commands, oxidation numbers, thermodynamic data, newman projections, etc.
-(add-to-list 'org-latex-packages-alist '("" "textgreek" t)) ; Use upright greek letters as text symbols, e.g. \textbeta
-(add-to-list 'org-latex-packages-alist '("" "chemnum" t))   ; A method for numbering chemical compounds
-(add-to-list 'org-latex-packages-alist '("" "bpchem" t)) ;numbering molecules with \CNref
+(add-to-list 'org-latex-packages-alist '("cache=false" "minted" nil))   ;; Highlighted source code for LATEX
 
 (add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
-
-(add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
-(add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
 
 (with-eval-after-load 'ox-latex
 
@@ -956,9 +951,9 @@ The function should accept one argument, a list of BibTeX keys.")
                   '("amu-these"
                     "\\documentclass{amu_these}
                      [NO-DEFAULT-PACKAGES]
-                     [PACKAGES]
+                     [NO-PACKAGES]
                      [EXTRA]"
-                    ;; ("\\part{%s}" . "\\part*{%s}")
+                    ("\\part{%s}" . "\\part*{%s}")
                     ("\\chapter{%s}" . "\\chapter*{%s}")
                     ("\\section{%s}" . "\\section*{%s}")
                     ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -999,6 +994,7 @@ The function should accept one argument, a list of BibTeX keys.")
 \\usepackage[super,sort&compress,comma]{natbib}
 \\usepackage[version=3]{mhchem}
 \\usepackage{bpchem}
+\\usepackage{chemmacros}
 \\usepackage[left=1.5cm, right=1.5cm, top=1.785cm, bottom=2.0cm]{geometry}
 \\usepackage{balance}
 \\usepackage{mathptmx}
@@ -1029,6 +1025,8 @@ The function should accept one argument, a list of BibTeX keys.")
 \\definecolor{cream}{RGB}{222,217,201}
 
 \\usepackage{pdfpages}
+\\usepackage{booktabs}
+\\usepackage{multirow}
                      [NO-DEFAULT-PACKAGES]
                      [NO-PACKAGES]
                      [NO-EXTRA]"
@@ -1367,11 +1365,11 @@ The function should accept one argument, a list of BibTeX keys.")
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 
-(setq org-file-apps
-   '(
-     ("\\.docx\\'" . default)
-     ("\\.pptx\\'" . default)
-     ))
+ (setq org-file-apps
+    '(
+      ("\\.docx\\'" . default)
+      ("\\.pptx\\'" . default)
+      ))
 
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."

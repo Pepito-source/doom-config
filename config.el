@@ -1,5 +1,5 @@
-(setq user-full-name "Vincent Montero"
-      user-mail-address "vincent_montero@icloud.com")
+  (setq user-full-name "Vincent Montero"
+        user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -1026,7 +1026,7 @@ The function should accept one argument, a list of BibTeX keys.")
 \\usepackage{multirow}
                      [NO-DEFAULT-PACKAGES]
                      [NO-PACKAGES]
-                     [NO-EXTRA]"
+                     [EXTRA]"
                     ("\\section{%s}" . "\\section*{%s}")
                     ("\\subsection{%s}" . "\\subsection*{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -1362,11 +1362,11 @@ The function should accept one argument, a list of BibTeX keys.")
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 
-(setq org-file-apps
-   '(
-     ("\\.docx\\'" . default)
-     ("\\.pptx\\'" . default)
-     ))
+ (setq org-file-apps
+    '(
+      ("\\.docx\\'" . default)
+      ("\\.pptx\\'" . default)
+      ))
 
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."

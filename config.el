@@ -1,5 +1,5 @@
-  (setq user-full-name "Vincent Montero"
-        user-mail-address "vincent_montero@icloud.com")
+(setq user-full-name "Vincent Montero"
+      user-mail-address "vincent_montero@icloud.com")
 
 (setq my/home-dir "/Users/vincentmontero/")
 
@@ -888,7 +888,6 @@ The function should accept one argument, a list of BibTeX keys.")
 (add-to-list 'org-latex-packages-alist '("" "changepage" nil)) ; To adjust the width of the column for the title part and figures/tables (adjustwidth environment)
 (add-to-list 'org-latex-packages-alist '("" "graphbox" nil)) ; To align graphics inside tables
 
-(add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "booktabs" nil))  ; for \toprule etc. in tables
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
@@ -910,8 +909,6 @@ The function should accept one argument, a list of BibTeX keys.")
             '((emacs-lisp "common-lispcode")))
 
 (add-to-list 'org-latex-packages-alist '("cache=false" "minted" nil))   ;; Highlighted source code for LATEX
-
-(add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
 
 (with-eval-after-load 'ox-latex
 
@@ -1365,11 +1362,11 @@ The function should accept one argument, a list of BibTeX keys.")
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 
- (setq org-file-apps
-    '(
-      ("\\.docx\\'" . default)
-      ("\\.pptx\\'" . default)
-      ))
+(setq org-file-apps
+   '(
+     ("\\.docx\\'" . default)
+     ("\\.pptx\\'" . default)
+     ))
 
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."

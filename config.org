@@ -5,6 +5,7 @@
 #+property: headers-args :tangle
 #+auto_tangle: t
 #+startup: overview
+#+exclude_tags: noexport
 #+TODO: TODO FIXME LATER
 
 * Notes
@@ -1272,7 +1273,6 @@ Keep relative and absolute paths from org-cite
 
 **** Tables
 #+begin_src emacs-lisp :tangle yes
-(add-to-list 'org-latex-packages-alist '("" "tabularx" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "booktabs" nil))  ; for \toprule etc. in tables
 (add-to-list 'org-latex-packages-alist '("" "multirow" nil))        ; Create tabular cells spanning multiple rows
@@ -1319,11 +1319,6 @@ Keep relative and absolute paths from org-cite
             '((emacs-lisp "common-lispcode")))
 
 (add-to-list 'org-latex-packages-alist '("cache=false" "minted" nil))   ;; Highlighted source code for LATEX
-#+end_src
-
-**** Other
-#+begin_src emacs-lisp :tangle yes
-(add-to-list 'org-latex-packages-alist '("" "ifthen" nil)) ; Conditional commands in LATEX documents : The package’s basic command is \ifthenelse, which can use a wide array of tests
 #+end_src
 
 *** Latex classes

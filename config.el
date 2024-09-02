@@ -1,19 +1,10 @@
   (setq user-full-name "Vincent Montero"
         user-mail-address "vincent_montero@icloud.com")
 
-(setq my/home-dir "/Users/vincentmontero/")
-
-(setq my/sync-base-dir (concat my/home-dir "/Library/Mobile Documents/com~apple~CloudDocs/"))
-(setq my/work-base-dir (concat my/sync-base-dir "02_work/"))
-(setq my/media-base-dir (concat my/sync-base-dir "Media/"))
-(setq org-directory my/work-base-dir
-      org-roam-directory    (concat org-directory "org-roam/")
-      )
-
 (setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
 
-(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python")
+(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python3")
 
 (use-package org-auto-tangle
   :defer t
@@ -32,7 +23,7 @@
   :bind ("H-," . ivy-yasnippet))
 (use-package ess-smart-equals)
 
-(add-to-list 'load-path "~/scimax")
+(add-to-list 'load-path (expand-file-name "~/scimax"))
 
 (eval-after-load 'bibtex
   '(progn
@@ -55,7 +46,6 @@
 (require 'scimax-hydra)
 (require 'scimax-statistics)
 (require 'scimax-journal)
-(setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
 
 (easy-menu-add)
 (eval-after-load 'easy-menu
@@ -497,10 +487,6 @@ The function should accept one argument, a list of BibTeX keys.")
   "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
   (funcall bibtex-completion-edit-notes-function keys))
 
-; All of my bib databases.
-(defconst my/bib-libraries
-  (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work" "\\.bib$"))
-
 ; Load recursively paths to bibliography pdf libraries
 (require 'f)
 
@@ -512,50 +498,10 @@ The function should accept one argument, a list of BibTeX keys.")
                      (cons dir (find-directories-recursively dir)))
                    dirs))))
 
-; Main PDFs directory
-(defconst my/main-pdfs-library-path
-    (append
-      (find-directories-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/")
-     '(
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/biocodex/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/orphandev/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/pharmacovigilance/biblio/"
-       )
-     )
-    )
-
-; I use org-roam to manage all my notes, including bib notes.
-(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/")
-
-(defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
-
 (use-package! ivy-bibtex
   :when (modulep! :completion vertico)
   :config
   (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
-
-  (setq bibtex-completion-notes-path my/bib-notes-dir
-      bibtex-completion-bibliography my/bib-libraries
-      bibtex-completion-library-path my/main-pdfs-library-path
-      bibtex-completion-pdf-field "file"
-      ;; bibtex-completion-notes-template-multiple-files
-      ;; (concat
-      ;;  "#+title: ${title}\n"
-      ;;  "#+roam_key: cite:${=key=}\n"
-      ;;  "* ${title}\n"
-      ;;  ":PROPERTIES:\n"
-      ;;  ":Custom_ID: ${=key=}\n"
-      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-      ;;  ":AUTHOR: ${author-abbrev}\n"
-      ;;  ":JOURNAL: ${journaltitle}\n"
-      ;;  ":DATE: ${date}\n"
-      ;;  ":YEAR: ${year}\n"
-      ;;  ":DOI: ${doi}\n"
-      ;;  ":URL: ${url}\n"
-      ;;  ":END:\n\n")
-      )
 
   (setq bibtex-completion-additional-search-fields '(("journaltitle")
                                                      (keywords))
@@ -572,72 +518,6 @@ The function should accept one argument, a list of BibTeX keys.")
         )
   )
 
-(use-package! citar
-  :hook (doom-after-init-modules . citar-refresh)
-  :config
-  (require 'citar-org)
-  :custom
-  (org-cite-global-bibliography my/bib-libraries)
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-
-  (citar-bibliography my/bib-libraries)
-  (citar-library-paths my/main-pdfs-library-path)
-  (citar-notes-paths (list my/bib-notes-dir))
-
-  (citar-citeproc-csl-styles-dir my/csl-dir)
-
-  (citar-templates
-   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
-     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
-     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
-     ))
-  ;; Configuring all-the-icons. From
-  ;; https://github.com/bdarcus/citar#rich-ui
-  (citar-symbols
-   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
-      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
-     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
-           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
-     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
-           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
-  (citar-symbol-separator "  ")
-  :init
-  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
-  ;; Change to your own theme's background(s)
-  (defface kb/citar-icon-dim
-    ;; Change these colors to match your theme. Using something like
-    ;; `face-attribute' to get the value of a particular attribute of a face might
-    ;; be more convenient.
-    '((((background dark)) :foreground "#212428")
-      (((background light)) :foreground "#f0f0f0"))
-    "Face for having icons' color be identical to the theme
-  background when \"not shown\".")
-
-  )
-
-(setq citar-org-roam-note-title-template
-      (concat
-       "${author} - ${title}\n"
-       "#+roam_key: cite:${=key=}\n"
-       "\n"
-       "- tags :: \n"
-       "- keywords :: ${keywords}\n"
-       "\n"
-       "* ${title}\n"
-       ":PROPERTIES:\n"
-       ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-       ":AUTHOR: ${author-abbrev}\n"
-       ":JOURNAL: ${journaltitle}\n"
-       ":DATE: ${date}\n"
-       ":YEAR: ${year}\n"
-       ":DOI: ${doi}\n"
-       ":URL: ${url}\n"
-       ":END:\n\n")
-      )
 
 (use-package! oc-bibtex :after oc)
 
@@ -731,10 +611,6 @@ The function should accept one argument, a list of BibTeX keys.")
 (use-package! org-pdftools
   :hook (org-mode . org-pdftools-setup-link))
 
-(setq
- org-noter-notes-search-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references")
- )
-
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 
 (defun efs/presentation-setup ()
@@ -758,54 +634,6 @@ The function should accept one argument, a list of BibTeX keys.")
 
 ;; (setq face-remapping-alist '((default (:height 2.4) default)
 ;;                              (italic (sheight 2.4) italic)))
-
-(after! org
-  (setq org-agenda-files (append
-                       '("/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/pharmacometrie/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/stresam/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/cannapark/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/csh/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/assos/amipbm/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/assos/fnsipbm/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/perso/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biology/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/chemistry/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/conseil-scientifique/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/communications/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/computer-science/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/funding/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/teaching/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/these-pharma/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/these-science/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/writing-articles/")
-                        ))
-)
-
-(defun org-cite-list-bibliography-files ()
-  "List all bibliography files defined in the buffer."
-  (delete-dups
-   (append (mapcar (lambda (value)
-		     (pcase value
-		       (`(,f . ,d)
-                        (setq f (org-strip-quotes f))
-                        (if (or (file-name-absolute-p f)
-                                (file-remote-p f)
-                                (equal d default-directory))
-                            ;; Keep absolute paths, remote paths, and
-                            ;; local relative paths.
-                            f
-                          ;; Adjust relative bibliography path for
-                          ;; #+SETUP files located in other directory.
-                          ;; Also, see `org-export--update-included-link'.
-                          (file-relative-name
-                           (expand-file-name f d) default-directory)))))
-		   (pcase (org-collect-keywords
-                           '("BIBLIOGRAPHY") nil '("BIBLIOGRAPHY"))
-		     (`(("BIBLIOGRAPHY" . ,pairs)) pairs)))
-	   org-cite-global-bibliography)))
 
 (setq org-latex-title-command "")
 

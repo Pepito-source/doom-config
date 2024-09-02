@@ -50,6 +50,9 @@ Run elisp:emacs-version to share info
 * From [[https://github.com/jkitchin/scimax/tree/master][Scimax]]
 ** Packages
 #+begin_src emacs-lisp :tangle yes
+(setq scimax-dir "~/scimax/")
+(setq scimax-user-dir "~/scimax/")
+
 (add-to-list 'load-path "~/scimax")
 
 (eval-after-load 'bibtex

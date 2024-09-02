@@ -1,10 +1,5 @@
-  (setq user-full-name "Vincent Montero"
-        user-mail-address "vincent_montero@icloud.com")
-
-(setq scimax-dir "~/scimax/")
-(setq scimax-user-dir "~/scimax/")
-
-(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python3")
+(setq user-full-name "Vincent Montero"
+      user-mail-address "vincent_montero@icloud.com")
 
 (use-package org-auto-tangle
   :defer t
@@ -23,7 +18,11 @@
   :bind ("H-," . ivy-yasnippet))
 (use-package ess-smart-equals)
 
+(setq scimax-dir "~/scimax/")
+(setq scimax-user-dir "~/scimax/")
+
 (add-to-list 'load-path (expand-file-name "~/scimax"))
+(load "scimax-org")
 
 (eval-after-load 'bibtex
   '(progn
@@ -35,7 +34,6 @@
 ;;(global-unset-key (kbd "<f12>"))
 (global-set-key (kbd "s-<") 'scimax/body)
 (jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
-
 
 (use-package words
   :bind ("H-w" . words-hydra/body))
@@ -173,270 +171,6 @@
     (ispell-change-dictionary lang)))
 (global-set-key (kbd "H-m") 'cycle-ispell-languages)
 
-(defun org-markup-region-or-point (type beginning-marker end-marker)
-  "Apply the markup TYPE with BEGINNING-MARKER and END-MARKER to region, word or point.
-This is a generic function used to apply markups. It is mostly
-the same for the markups, but there are some special cases for
-subscripts and superscripts."
-  (cond
-   ;; We have an active region we want to apply
-   ((region-active-p)
-    (let* ((bounds (list (region-beginning) (region-end)))
-	   (start (apply 'min bounds))
-	   (end (apply 'max bounds))
-	   (lines))
-      ;; set some bounds here, unless it is a subscript/superscript
-      ;; Those start at point or region
-      (unless (memq type '(subscript superscript))
-	(save-excursion
-	  (goto-char start)
-	  (unless (looking-at " \\|\\<")
-	    (backward-word)
-	    (setq start (point)))
-	  (goto-char end)
-	  (unless (or (looking-at " \\|\\>")
-		      (looking-back "\\>" 1))
-	    (forward-word)
-	    (setq end (point)))))
-
-      (setq lines
-	    (s-join "\n" (mapcar
-			  (lambda (s)
-			    (if (not (string= (s-trim s) ""))
-				(concat beginning-marker
-					(s-trim s)
-					end-marker)
-			      s))
-			  (split-string
-			   (buffer-substring start end) "\n"))))
-      (setf (buffer-substring start end) lines)
-      (forward-char (length lines))))
-   ;; We are on a word with no region selected
-   ((thing-at-point 'word)
-    (cond
-     ;; beginning of a word
-     ((looking-back " " 1)
-      (insert beginning-marker)
-      (re-search-forward "\\>")
-      (insert end-marker))
-     ;; end of a word
-     ((looking-back "\\>" 1)
-      (insert (concat beginning-marker end-marker))
-      (backward-char (length end-marker)))
-
-     ;; looking back at closing char
-     ((and (memq type '(subscript superscript))
-	   (looking-back end-marker 1))
-      (delete-char -1)
-      (forward-char)
-      (insert end-marker))
-
-     ;; not at start or end so we just sub/sup the character at point
-     ((memq type '(subscript superscript))
-      (insert beginning-marker)
-      (forward-char (- (length beginning-marker) 1))
-      (insert end-marker))
-     ;; somewhere else in a word and handled sub/sup. mark up the
-     ;; whole word.
-     (t
-      (re-search-backward "\\<")
-      (insert beginning-marker)
-      (re-search-forward "\\>")
-      (insert end-marker))))
-   ;; looking back at end marker, slurp next word in
-   ((looking-back end-marker (length end-marker))
-    (delete-char (* -1 (length end-marker)))
-    (forward-word)
-    (insert end-marker))
-   ;; not at a word or region insert markers and put point between
-   ;; them.
-   (t
-    (insert (concat beginning-marker end-marker))
-    (backward-char (length end-marker)))))
-
-
-(defun org-double-quote-region-or-point ()
-  "Double quote the region, word or character at point.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'italics "\"" "\""))
-
-
-(defun org-single-quote-region-or-point ()
-  "Single quote the region, word or character at point.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'italics "'" "'"))
-
-
-(defun org-italics-region-or-point ()
-  "Italicize the region, word or character at point.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'italics "/" "/"))
-
-
-(defun org-bold-region-or-point ()
-  "Bold the region, word or character at point.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'bold "*" "*"))
-
-
-(defun org-underline-region-or-point ()
-  "Underline the region, word or character at point.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'underline "_" "_"))
-
-
-(defun org-code-region-or-point ()
-  "Mark the region, word or character at point as code.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'underline "~" "~"))
-
-
-(defun org-verbatim-region-or-point ()
-  "Mark the region, word or character at point as verbatim.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'underline "=" "="))
-
-
-(defun org-strikethrough-region-or-point ()
-  "Mark the region, word or character at point as strikethrough.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'strikethrough "+" "+"))
-
-
-(defun org-subscript-region-or-point ()
-  "Mark the region, word or character at point as a subscript.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'subscript "_{" "}"))
-
-
-(defun org-superscript-region-or-point ()
-  "Mark the region, word or character at point as superscript.
-This function tries to do what you mean:
-1. If you select a region, markup the region.
-2. If in a word, markup the word.
-3. Otherwise wrap the character at point in the markup.
-Repeated use of the function slurps the next word into the markup."
-  (interactive)
-  (org-markup-region-or-point 'superscript "^{" "}"))
-
-
-(defun org-latex-math-region-or-point (&optional arg)
-  "Wrap the selected region in latex math markup.
-\(\) or $$ (with prefix ARG) or @@latex:@@ with double prefix.
-With no region selected, insert those and put point in the middle
-to add an equation. Finally, if you are between these markers
-then exit them."
-  (interactive "P")
-  (if (memq 'org-latex-and-related (get-char-property (point) 'face))
-      ;; in a fragment, let's get out.
-      (goto-char (or (next-single-property-change (point) 'face) (line-end-position)))
-    (let ((chars
-	   (cond
-	    ((null arg)
-	     '("\\(" . "\\)"))
-	    ((equal arg '(4))
-	     '("$" . "$"))
-	    ((equal arg '(16))
-	     '("@@latex:" . "@@")))))
-      (if (region-active-p)
-	  ;; wrap region
-	  (progn
-	    (goto-char (region-end))
-	    (insert (cdr chars))
-	    (goto-char (region-beginning))
-	    (insert (car chars)))
-	(cond
-	 ((thing-at-point 'word)
-	  (save-excursion
-	    (end-of-thing 'word)
-	    (insert (cdr chars)))
-	  (save-excursion
-	    (beginning-of-thing 'word)
-	    (insert (car chars)))
-	  (forward-char (length (car chars))))
-	 ;; slurp next word if you call it again
-	 ((and (not (equal arg '(16))) (looking-back (regexp-quote (cdr chars)) (length (cdr chars))))
-	  (delete-char (* -1 (length (cdr chars))))
-	  (forward-word)
-	  (insert (cdr chars)))
-	 (t
-	  (insert (concat  (car chars) (cdr chars)))
-	  (backward-char (length (cdr chars)))))))))
-
-
-(defun ivy-insert-org-entity ()
-  "Insert an org-entity using ivy."
-  (interactive)
-  (ivy-read "Entity: " (cl-loop for element in (append org-entities org-entities-user)
-				when (not (stringp element))
-				collect
-				(cons
-				 (format "%20s | %20s | %20s | %s"
-					 (cl-first element)    ;name
-					 (cl-second element)   ; latex
-					 (cl-fourth element)   ; html
-					 (cl-seventh element)) ;utf-8
-				 element))
-	    :require-match t
-	    :action '(1
-		      ("u" (lambda (candidate)
-			     (insert (cl-seventh (cdr candidate)))) "utf-8")
-		      ("o" (lambda (candidate)
-			     (insert "\\" (cl-first (cdr candidate)))) "org-entity")
-		      ("l" (lambda (candidate)
-			     (insert (cl-second (cdr candidate)))) "latex")
-		      ("h" (lambda (candidate)
-			     (insert (cl-fourth (cdr candidate)))) "html")
-		      ("a" (lambda (candidate)
-			     (insert (cl-fifth (cdr candidate)))) "ascii")
-		      ("L" (lambda (candidate)
-			     (insert (cl-sixth (cdr candidate))) "Latin-1")))))
-
 (global-set-key (kbd "H--") 'org-subscript-region-or-point)
 (global-set-key (kbd "H-=") 'org-superscript-region-or-point)
 (global-set-key (kbd "H-i") 'org-italics-region-or-point)
@@ -475,130 +209,6 @@ then exit them."
 
 (setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
-
-(require 'citar)
-(require 'citar-org-roam)
-
-(defvar bibtex-completion-edit-notes-function #'citar-open-notes
-  "Function used to edit notes.
-The function should accept one argument, a list of BibTeX keys.")
-
-(defun bibtex-completion-edit-notes (keys)
-  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
-  (funcall bibtex-completion-edit-notes-function keys))
-
-; Load recursively paths to bibliography pdf libraries
-(require 'f)
-
-(defun find-directories-recursively (directory)
-  "Recursively find directories under DIRECTORY."
-  (let ((dirs (f-directories directory)))
-    (apply #'append
-           (mapcar (lambda (dir)
-                     (cons dir (find-directories-recursively dir)))
-                   dirs))))
-
-(use-package! ivy-bibtex
-  :when (modulep! :completion vertico)
-  :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
-
-  (setq bibtex-completion-additional-search-fields '(("journaltitle")
-                                                     (keywords))
-        bibtex-completion-pdf-symbol ""
-        bibtex-completion-notes-symbol ""
-        bibtex-completion-pdf-field "file"
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
-
-        )
-  )
-
-
-(use-package! oc-bibtex :after oc)
-
-(use-package! org-ref
-  :after org
-  :config
-  (require 'org-ref-ivy)
-  )
-
-(defun DDG-this ()
-  "Perform a DuckDuckGo search for the selected text or prompt for input."
-  (interactive)
-  (let ((search-term (if (region-active-p)
-                         (buffer-substring-no-properties (region-beginning) (region-end))
-                       (read-string "Search: "))))
-    (browse-url (format "https://duckduckgo.com/?q=%s" (url-hexify-string search-term)))))
-
-(setq bibtex-autokey-year-length 4
-          bibtex-autokey-name-year-separator "-"
-          bibtex-autokey-year-title-separator "-"
-          bibtex-autokey-titleword-separator "-"
-          bibtex-autokey-titlewords 2
-          bibtex-autokey-titlewords-stretch 1
-          bibtex-autokey-titleword-length 5)
-
-(defun scifinder ()
-  "Open https://scifinder.cas.org/scifinder/view/scifinder/scifinderExplore.jsf in a browser."
-  (interactive)
-  (browse-url   "https://sso-cas-org.lama.univ-amu.fr/as/authorization.oauth2?response_type=code&client_id=scifinder-n&redirect_uri=https%3A%2F%2Fscifinder-n.cas.org%2Fpa%2Foidc%2Fcb&state=eyJ6aXAiOiJERUYiLCJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoicjVEZU5XUTN6TENDNERTdjR6ZDFxakc5eDRZIiwic3VmZml4IjoibWlGS09lLjE2ODcwODI3NzQifQ..gqelHLndPNYd13nUhUc0yg.qq1i9fRNWSb5CK-VzClHUvjp9DZ9hxIR-WMamA9Phg1Ee--s_n0OV_PiUVtFPuESKYKDd2onqlb11tO5qPLP7A.n2MA2ZFpH2NKU1Mvf8ubTA&nonce=FYiL2oWWopZxgdQwskEt7dxmpJ2Gb9KF_c_jSE80I3g&scope=openid%20address%20email%20phone%20profile&vnd_pi_requested_resource=https%3A%2F%2Fscifinder-n.cas.org%2F&vnd_pi_application_name=SciFinder-nIDF"))
-
-(defun pubmed ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://pubmed.ncbi.nlm.nih.gov/?otool=iframuscdlib"))
-
-(defun bu-amu ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://univ-amu.summon.serialssolutions.com/#!/search?ho=t&include.ft.matches=f&l=fr-FR&q="))
-
-(defun chatGPT ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://chat.openai.com"))
-
-(define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
-(define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
-(define-key org-mode-map (kbd "s-à") 'org-ref-insert-ref-link)
-(define-key org-mode-map (kbd "s-ç") 'org-ref-insert-label-link)
-(define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
-
-;; * Doom emacs keybinding for inserting org ref link to bibtex entry
-(map! :leader
-      ;; Inserting
-      :desc "Insert citation"
-      "i i" #'org-ref-insert-link
-      :desc "Insert label"
-      "i l" #'org-ref-insert-ref-link
-      :desc "DOI Add bibtex entry"
-      "i d" #'doi-add-bibtex-entry
-
-      ;; Opening
-      :desc "Scifinder"
-      "o s" #'scifinder
-      :desc "Pubmed"
-      "o m" #'pubmed
-      :desc "BU AMU"
-      "o B" #'bu-amu
-      :desc "Chat GPT"
-      "o c" #'chatGPT
-
-      ;; Searching
-      :desc "Google this"
-      "s g" #'google-this
-      :desc "DuckDuckGo this"
-      "s @" #'DDG-this
-
-      :desc "ORB Actions"
-      "n r @" #'orb-note-actions
-
-      )
 
 (use-package org-mac-link)
 
@@ -917,7 +527,6 @@ The function should accept one argument, a list of BibTeX keys.")
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 
 (defvar bibtex-abbreviations
-
   '(
     ("ACAT" "ACS Catalysis" "ACS Catal.")
     ("AM" "Acta Materialia" "Acta Mater.")
@@ -1190,11 +799,11 @@ The function should accept one argument, a list of BibTeX keys.")
  (format "Last update : %s" (format-time-string "%d %b %Y")))
 (setq org-html-postamble 'my-org-html-postamble)
 
- (setq org-file-apps
-    '(
-      ("\\.docx\\'" . default)
-      ("\\.pptx\\'" . default)
-      ))
+(setq org-file-apps
+   '(
+     ("\\.docx\\'" . default)
+     ("\\.pptx\\'" . default)
+     ))
 
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."

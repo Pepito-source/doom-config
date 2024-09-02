@@ -87,7 +87,6 @@ Run elisp:emacs-version to share info
 (require 'scimax-hydra)
 (require 'scimax-statistics)
 (require 'scimax-journal)
-(setq scimax-journal-root-dir (concat my/work-base-dir "journal"))
 
 (easy-menu-add)
 (eval-after-load 'easy-menu
@@ -421,22 +420,6 @@ As such, [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] can b
 #+end_src
 
 ** Citar [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
-
-This code wraps the bibtex-completion-edit-notes-function to use citar-open-notes instead.
-Still doesnt work.
-
-#+begin_src emacs-lisp :tangle yes
-(require 'citar)
-(require 'citar-org-roam)
-
-(defvar bibtex-completion-edit-notes-function #'citar-open-notes
-  "Function used to edit notes.
-The function should accept one argument, a list of BibTeX keys.")
-
-(defun bibtex-completion-edit-notes (keys)
-  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
-  (funcall bibtex-completion-edit-notes-function keys))
-#+end_src
 
 * Bibliography
 

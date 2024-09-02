@@ -9,20 +9,28 @@
 #+TODO: TODO FIXME LATER
 
 * Notes
+
 ** [[https://github.com/doomemacs/doomemacs/blob/develop/docs/getting%5Fstarted.org#Configure][DoomEmacs config notice]]
+
 ** Interesting configs
+
 https://github.com/nalhasan/emacsconf2020/blob/master/config.org
 https://github.com/WouterSpekkink/dotfiles/blob/master/doom/config.el
 http://www.wouterspekkink.org/academia/writing/tool/doom-emacs/2021/02/27/writing-academic-papers-with-org-mode.html
+
 ** Seeking help
+
 Run elisp:emacs-version to share info
+
 * Contact info
+
 #+begin_src emacs-lisp :tangle yes
   (setq user-full-name "Vincent Montero"
         user-mail-address "vincent_montero@icloud.com")
 #+end_src
 
 * Org-auto-tangle
+
 #+begin_src emacs-lisp :tangle yes
 (use-package org-auto-tangle
   :defer t
@@ -47,8 +55,11 @@ Run elisp:emacs-version to share info
   :bind ("H-," . ivy-yasnippet))
 (use-package ess-smart-equals)
 #+end_src
+
 * From [[https://github.com/jkitchin/scimax/tree/master][Scimax]]
+
 ** Packages
+
 #+begin_src emacs-lisp :tangle yes
 (setq scimax-dir "~/scimax/")
 (setq scimax-user-dir "~/scimax/")
@@ -66,7 +77,6 @@ Run elisp:emacs-version to share info
 ;;(global-unset-key (kbd "<f12>"))
 (global-set-key (kbd "s-<") 'scimax/body)
 (jupyter-org-define-key (kbd "s-<") #'scimax-jupyter-org-hydra/body)
-
 
 (use-package words
   :bind ("H-w" . words-hydra/body))
@@ -103,6 +113,7 @@ Run elisp:emacs-version to share info
 #+end_src
 
 ** TODO Abbreviations
+
 #+begin_src emacs-lisp :tangle no
 (scimax-toggle-abbrevs 'scimax-month-abbreviations +1)
 (scimax-toggle-abbrevs 'scimax-weekday-abbreviations +1)
@@ -111,33 +122,44 @@ Run elisp:emacs-version to share info
 (scimax-toggle-abbrevs 'scimax-chemical-formula-abbreviations +1)
 (scimax-toggle-abbrevs 'scimax-misc-abbreviations +1)
 #+end_src
+
 * Visual settings
+
 ** Theme
+
 #+begin_src emacs-lisp :tangle yes
 (setq doom-theme 'doom-dracula)
 #+end_src
+
 ** Display time
+
 #+begin_src emacs-lisp :tangle yes
 (setq display-time-day-and-date t)
 (display-time)
 (display-time-mode 1)
 ;;(add-hook 'after-init-hook (lambda () (org-agenda nil "o")))
 #+end_src
+
 ** Display battery
+
 #+begin_src emacs-lisp :tangle yes
 (display-battery-mode 1)
 #+end_src
+
 ** Scroll conservatively
+
 #+begin_src emacs-lisp :tangle yes
 (setq scroll-conservatively 100)
 #+end_src
 
 ** Fullscreen
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 #+end_src
 
 ** Modeline and numbering
+
 #+begin_src emacs-lisp :tangle yes
 (setq display-line-numbers-type t)
 (global-display-line-numbers-mode)
@@ -153,7 +175,9 @@ Run elisp:emacs-version to share info
 #+end_src
 
 ** Coloring code blocks
+
 *** Yes
+
 #+begin_src emacs-lisp :tangle no
 (setq org-src-block-faces '(("emacs-lisp" (:background "LightCyan1" :extend t))
 			     ("sh" (:background "gray90" :extend t))
@@ -161,13 +185,17 @@ Run elisp:emacs-version to share info
 			     ("ipython" (:background "thistle1" :extend t))
 			     ("jupyter-python" (:background "thistle1" :extend t))))
 #+end_src
+
 *** No
+
 #+begin_src emacs-lisp :tangle yes
 (after! org
   (setq org-src-block-faces nil)
   )
 #+end_src
+
 ** Pretty
+
 #+begin_src emacs-lisp :tangle yes
 (use-package org-superstar
   :config
@@ -193,18 +221,24 @@ Run elisp:emacs-version to share info
 #+end_src
 
 ** Beacon
+
 #+begin_src emacs-lisp :tangle yes
 (beacon-mode 1)
 #+end_src
 
 ** Inline images
+
 #+begin_src emacs-lisp :tangle yes
 (setq org-startup-with-inline-images nil)
 #+end_src
+
 * Keybindings
+
 https://www.masteringemacs.org/article/mastering-key-bindings-emacs
 https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
+
 ** Split right and left command keys
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;; Meta key on apple keyboard
 (setq ns-alternate-modifier 'meta)
@@ -212,6 +246,7 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 #+END_SRC
 
 ** Modify apple keyboard: C - M - s - H
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;; set keys for Apple keyboard, for emacs in OS X
 (setq mac-control-modifier 'control) ; make Control key do Control
@@ -219,11 +254,15 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 (setq mac-left-command-modifier 'super) ; make left opt key do Super
 (setq mac-right-command-modifier 'hyper)  ; make cmd right key do Hyper
 #+END_SRC
+
 ** Toggle truncated lines
+
 #+begin_src emacs-lisp :tangle yes
 (global-set-key (kbd "M-q") 'toggle-truncate-lines)
 #+end_src
+
 * TODO Email: mu4e
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'load-path "/opt/homebrew/Cellar/mu/1.8.14/share/emacs/site-lisp/mu/mu4e")
 ;; (require 'mu4e)
@@ -231,14 +270,19 @@ https://rameezkhan.me/posts/2020/2020-07-03--adding-keybindings-to-doom-emacs/
 #+end_src
 
 * [[https://github.com/skeeto/elfeed][Elfeed]]
+
 ** Elfeed goodies
+
 #+begin_src emacs-lisp :tangle yes
 (require 'elfeed-goodies)
 (elfeed-goodies/setup)
 (setq elfeed-goodies/entry-pane-size 0.6)
 #+end_src
+
 ** TODO [[https://github.com/sp1ff/elfeed-score][Elfeed-score]]
+
 https://www.unwoundstack.com/doc/elfeed-score/curr
+
 #+begin_src emacs-lisp :tangle no
 (use-package! elfeed-score
   :after elfeed
@@ -247,15 +291,19 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
   (define-key elfeed-search-mode-map "=" elfeed-score-map))
 
 (setq elfeed-search-print-entry-function #'elfeed-score-print-entry)
-  #+end_src
+#+end_src
+
 ** [[https://github.com/remyhonig/elfeed-org][Elfeed-org]]
+
 #+begin_src emacs-lisp :tangle yes
 (use-package elfeed-org
   :config
   (elfeed-org)
   (setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org")))
 #+end_src
+
 ** Keymaps
+
 #+begin_src emacs-lisp :tangle yes
 (map! :leader
       :desc "Elfeed"
@@ -278,7 +326,9 @@ https://www.unwoundstack.com/doc/elfeed-score/curr
   (kbd "J") 'elfeed-goodies/split-show-next
   (kbd "K") 'elfeed-goodies/split-show-prev)
 #+end_src
+
 * Aspell and Flycheck
+
 Aspell is a spell checker.
 Since I write in multiple languages, I have set it up to cycle through spanish, english and french.
 
@@ -307,12 +357,12 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
   (add-hook 'text-mode-hook #'flycheck-mode)
   (add-hook 'org-mode-hook #'flycheck-mode)
   (define-key flycheck-mode-map (kbd "s-;") 'flycheck-previous-error))
-
 #+end_src
 
 * Formatting
 
 ** Keybindings
+
 #+begin_src emacs-lisp :tangle yes
 (global-set-key (kbd "H--") 'org-subscript-region-or-point)
 (global-set-key (kbd "H-=") 'org-superscript-region-or-point)
@@ -329,6 +379,7 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 ** IC_{50}
+
 #+begin_src emacs-lisp :tangle yes
 (defun my/org-mode-IC50-autoformat ()
   "Autoformat IC50 as IC_{50} in Org-mode."
@@ -340,11 +391,15 @@ Since I write in multiple languages, I have set it up to cycle through spanish, 
 #+end_src
 
 * Taking Notes: Roam
+
 ** [[https://www.orgroam.com][Org-roam]]
+
 Set up in Doom's init.el file (org +roam2).
 With the biblio module toggled on, Doom uses the [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] to integrate notes to [[https://www.orgroam.com][org-roam]].
 As such, [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] can be viewed as a competitor to org-roam-bibtex
+
 ** [[https://github.com/org-roam/org-roam-ui][Org-roam UI]]
+
 #+begin_src emacs-lisp :tangle yes
 (use-package! websocket
     :after org-roam)
@@ -363,10 +418,13 @@ As such, [[https://github.com/emacs-citar/citar-org-roam][citar-org-roam]] can b
 
 (setq org-roam-graph-executable "/opt/homebrew/Cellar/graphviz/8.0.5/bin/dot")
 (setq org-roam-graph-viewer "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/Contents/MacOS/Safari")
-
 #+end_src
+
 ** Citar [[https://github.com/org-roam/org-roam-bibtex][Org-roam-bibtex]]
+
 This code wraps the bibtex-completion-edit-notes-function to use citar-open-notes instead.
+Still doesnt work.
+
 #+begin_src emacs-lisp :tangle yes
 (require 'citar)
 (require 'citar-org-roam)
@@ -379,290 +437,21 @@ The function should accept one argument, a list of BibTeX keys.")
   "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
   (funcall bibtex-completion-edit-notes-function keys))
 #+end_src
-Still doesnt work.
 
 * Bibliography
+
 https://blog.tecosaur.com/tmio/2021-07-31-citations.html
-** Paths
-#+begin_src emacs-lisp :tangle yes
-; All of my bib databases.
-(defconst my/bib-libraries
-  (directory-files-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work" "\\.bib$"))
-
-; Load recursively paths to bibliography pdf libraries
-(require 'f)
-
-(defun find-directories-recursively (directory)
-  "Recursively find directories under DIRECTORY."
-  (let ((dirs (f-directories directory)))
-    (apply #'append
-           (mapcar (lambda (dir)
-                     (cons dir (find-directories-recursively dir)))
-                   dirs))))
-
-; Main PDFs directory
-(defconst my/main-pdfs-library-path
-    (append
-      (find-directories-recursively "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/")
-     '(
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/biocodex/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/orphandev/biblio/"
-       "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/pharmacovigilance/biblio/"
-       )
-     )
-    )
-
-; I use org-roam to manage all my notes, including bib notes.
-(defconst my/bib-notes-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references/")
-
-(defconst my/csl-dir "~/Library/Mobile Documents/com~apple~CloudDocs/02_work/csl/")
-#+end_src
-
-** [[https://github.com/tmalsburg/helm-bibtex][Bibtex-completion]]
-#+begin_src emacs-lisp :tangle yes
-(use-package! ivy-bibtex
-  :when (modulep! :completion vertico)
-  :config
-  (add-to-list 'ivy-re-builders-alist '(ivy-bibtex . ivy--regex-plus))
-
-  (setq bibtex-completion-notes-path my/bib-notes-dir
-      bibtex-completion-bibliography my/bib-libraries
-      bibtex-completion-library-path my/main-pdfs-library-path
-      bibtex-completion-pdf-field "file"
-      ;; bibtex-completion-notes-template-multiple-files
-      ;; (concat
-      ;;  "#+title: ${title}\n"
-      ;;  "#+roam_key: cite:${=key=}\n"
-      ;;  "* ${title}\n"
-      ;;  ":PROPERTIES:\n"
-      ;;  ":Custom_ID: ${=key=}\n"
-      ;;  ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-      ;;  ":AUTHOR: ${author-abbrev}\n"
-      ;;  ":JOURNAL: ${journaltitle}\n"
-      ;;  ":DATE: ${date}\n"
-      ;;  ":YEAR: ${year}\n"
-      ;;  ":DOI: ${doi}\n"
-      ;;  ":URL: ${url}\n"
-      ;;  ":END:\n\n")
-      )
-
-  (setq bibtex-completion-additional-search-fields '(("journaltitle")
-                                                     (keywords))
-        bibtex-completion-pdf-symbol ""
-        bibtex-completion-notes-symbol ""
-        bibtex-completion-pdf-field "file"
-        bibtex-completion-display-formats
-        '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
-          (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-          (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-          (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}"))
-
-        )
-  )
-
-#+end_src
-** [[https://github.com/emacs-citar][Citar]]
-*** Config
-
-#+begin_src emacs-lisp :tangle yes
-(use-package! citar
-  :hook (doom-after-init-modules . citar-refresh)
-  :config
-  (require 'citar-org)
-  :custom
-  (org-cite-global-bibliography my/bib-libraries)
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-
-  (citar-bibliography my/bib-libraries)
-  (citar-library-paths my/main-pdfs-library-path)
-  (citar-notes-paths (list my/bib-notes-dir))
-
-  (citar-citeproc-csl-styles-dir my/csl-dir)
-
-  (citar-templates
-   '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
-     (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
-     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-     (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
-     ))
-  ;; Configuring all-the-icons. From
-  ;; https://github.com/bdarcus/citar#rich-ui
-  (citar-symbols
-   `((file ,(all-the-icons-faicon "file-pdf-o" :face 'all-the-icons-green :v-adjust -0.1) .
-      ,(all-the-icons-faicon "file-pdf-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
-     (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
-           ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
-     (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
-           ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
-  (citar-symbol-separator "  ")
-  :init
-  ;; Here we define a face to dim non 'active' icons, but preserve alignment.
-  ;; Change to your own theme's background(s)
-  (defface kb/citar-icon-dim
-    ;; Change these colors to match your theme. Using something like
-    ;; `face-attribute' to get the value of a particular attribute of a face might
-    ;; be more convenient.
-    '((((background dark)) :foreground "#212428")
-      (((background light)) :foreground "#f0f0f0"))
-    "Face for having icons' color be identical to the theme
-  background when \"not shown\".")
-
-  )
-#+end_src
-*** Capturing template
-#+begin_src emacs-lisp :tangle yes
-(setq citar-org-roam-note-title-template
-      (concat
-       "${author} - ${title}\n"
-       "#+roam_key: cite:${=key=}\n"
-       "\n"
-       "- tags :: \n"
-       "- keywords :: ${keywords}\n"
-       "\n"
-       "* ${title}\n"
-       ":PROPERTIES:\n"
-       ":Custom_ID: ${=key=}\n"
-       ":NOTER_DOCUMENT: [[~/Library/Mobile Documents/com~apple~CloudDocs/02_work/bibtex-pdfs/${=key=}.pdf]]\n"
-       ":AUTHOR: ${author-abbrev}\n"
-       ":JOURNAL: ${journaltitle}\n"
-       ":DATE: ${date}\n"
-       ":YEAR: ${year}\n"
-       ":DOI: ${doi}\n"
-       ":URL: ${url}\n"
-       ":END:\n\n")
-      )
-#+end_src
-
-** Org-cite processors
-#+begin_src emacs-lisp :tangle yes
-(use-package! oc-bibtex :after oc)
-#+end_src
-** [[https://github.com/jkitchin/org-ref][Org-ref]]
-*** Basic
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-ref
-  :after org
-  :config
-  (require 'org-ref-ivy)
-  )
-#+end_src
-*** Replace org-ref with org-cite
-#+begin_src emacs-lisp :tangle no
-(after! oc
-  (setq org-ref-insert-cite-function
-        (lambda ()
-          (org-cite-insert nil))
-        )
-  )
-#+end_src
-*** DuckDuckGo search
-#+begin_src emacs-lisp :tangle yes
-(defun DDG-this ()
-  "Perform a DuckDuckGo search for the selected text or prompt for input."
-  (interactive)
-  (let ((search-term (if (region-active-p)
-                         (buffer-substring-no-properties (region-beginning) (region-end))
-                       (read-string "Search: "))))
-    (browse-url (format "https://duckduckgo.com/?q=%s" (url-hexify-string search-term)))))
-
-
-#+end_src
-*** Bibtex keys
-Automated bibtex key rules
-#+begin_src emacs-lisp :tangle yes
-(setq bibtex-autokey-year-length 4
-          bibtex-autokey-name-year-separator "-"
-          bibtex-autokey-year-title-separator "-"
-          bibtex-autokey-titleword-separator "-"
-          bibtex-autokey-titlewords 2
-          bibtex-autokey-titlewords-stretch 1
-          bibtex-autokey-titleword-length 5)
-#+end_src
-
-*** Sci-finder
-#+begin_src emacs-lisp :tangle yes
-(defun scifinder ()
-  "Open https://scifinder.cas.org/scifinder/view/scifinder/scifinderExplore.jsf in a browser."
-  (interactive)
-  (browse-url   "https://sso-cas-org.lama.univ-amu.fr/as/authorization.oauth2?response_type=code&client_id=scifinder-n&redirect_uri=https%3A%2F%2Fscifinder-n.cas.org%2Fpa%2Foidc%2Fcb&state=eyJ6aXAiOiJERUYiLCJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoicjVEZU5XUTN6TENDNERTdjR6ZDFxakc5eDRZIiwic3VmZml4IjoibWlGS09lLjE2ODcwODI3NzQifQ..gqelHLndPNYd13nUhUc0yg.qq1i9fRNWSb5CK-VzClHUvjp9DZ9hxIR-WMamA9Phg1Ee--s_n0OV_PiUVtFPuESKYKDd2onqlb11tO5qPLP7A.n2MA2ZFpH2NKU1Mvf8ubTA&nonce=FYiL2oWWopZxgdQwskEt7dxmpJ2Gb9KF_c_jSE80I3g&scope=openid%20address%20email%20phone%20profile&vnd_pi_requested_resource=https%3A%2F%2Fscifinder-n.cas.org%2F&vnd_pi_application_name=SciFinder-nIDF"))
-#+end_src
-*** Pubmed
-#+begin_src emacs-lisp :tangle yes
-(defun pubmed ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://pubmed.ncbi.nlm.nih.gov/?otool=iframuscdlib"))
-
-#+end_src
-*** BU AMU
-#+begin_src emacs-lisp :tangle yes
-(defun bu-amu ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://univ-amu.summon.serialssolutions.com/#!/search?ho=t&include.ft.matches=f&l=fr-FR&q="))
-#+end_src
-*** ChatGPT
-#+begin_src emacs-lisp :tangle yes
-(defun chatGPT ()
-  "Open http://www.ncbi.nlm.nih.gov/pubmed in a browser."
-  (interactive)
-  (browse-url "https://chat.openai.com"))
-#+end_src
-*** Keybindings
-#+begin_src emacs-lisp :tangle yes
-(define-key org-mode-map (kbd "s-)") 'org-ref-insert-link)
-(define-key org-mode-map (kbd "s-(") 'org-ref-insert-link-hydra/body)
-(define-key org-mode-map (kbd "s-à") 'org-ref-insert-ref-link)
-(define-key org-mode-map (kbd "s-ç") 'org-ref-insert-label-link)
-(define-key bibtex-mode-map (kbd "H-p") 'org-ref-bibtex-hydra/body)
-#+end_src
-
-DOOM emacs keybinding for inserting references
-#+begin_src emacs-lisp :tangle yes
-;; * Doom emacs keybinding for inserting org ref link to bibtex entry
-(map! :leader
-      ;; Inserting
-      :desc "Insert citation"
-      "i i" #'org-ref-insert-link
-      :desc "Insert label"
-      "i l" #'org-ref-insert-ref-link
-      :desc "DOI Add bibtex entry"
-      "i d" #'doi-add-bibtex-entry
-
-      ;; Opening
-      :desc "Scifinder"
-      "o s" #'scifinder
-      :desc "Pubmed"
-      "o m" #'pubmed
-      :desc "BU AMU"
-      "o B" #'bu-amu
-      :desc "Chat GPT"
-      "o c" #'chatGPT
-
-      ;; Searching
-      :desc "Google this"
-      "s g" #'google-this
-      :desc "DuckDuckGo this"
-      "s @" #'DDG-this
-
-      :desc "ORB Actions"
-      "n r @" #'orb-note-actions
-
-      )
-#+end_src
 
 ** Org-mac-link
+
 #+begin_src emacs-lisp :tangle yes
 (use-package org-mac-link)
 #+end_src
 
 * PDFs
+
 ** Open pdf files inside/outside emacs
+
 *** From LaTeX export
 
 #+begin_src emacs-lisp :tangle yes
@@ -699,6 +488,7 @@ Opening PDF files outside emacs, by default PDFs open in PDFTools:
 #+end_src
 
 ** PDF-tools set-up
+
 #+begin_src emacs-lisp :tangle no
 (pdf-loader-install)
 (use-package pdf-tools
@@ -712,20 +502,20 @@ Opening PDF files outside emacs, by default PDFs open in PDFTools:
   (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
   (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
 #+end_src
+
 ** [[https://github.com/fuxialexander/org-pdftools/tree/master][Org-pdftools]]
+
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-pdftools
   :hook (org-mode . org-pdftools-setup-link))
 #+end_src
-** Org-noter
-#+begin_src emacs-lisp :tangle yes
-(setq
- org-noter-notes-search-path '("~/Library/Mobile Documents/com~apple~CloudDocs/02_work/org-roam/references")
- )
 
-#+end_src
+** Org-noter
+
 ** FIXME Org-noter-pdftools
+
 There are some issues with org-noter-pdftools : cannot extract article's skeleton.
+
 #+begin_src emacs-lisp :tangle no
 (use-package! org-noter-pdftools
   :after org-noter
@@ -761,7 +551,9 @@ With a prefix ARG, remove start location."
     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note))
     )
 #+end_src
+
 ** Org-ref-open-pdf-at-point
+
 #+begin_src emacs-lisp :tangle no
 (defun my/org-ref-open-pdf-at-point ()
   "Open the pdf for bibtex key under point if it exists."
@@ -774,13 +566,19 @@ With a prefix ARG, remove start location."
       (message "No PDF found for %s" key))))
 (setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
 #+end_src
+
 ** BUG: Enabling annotations
+
 BUG SOLVING: Essential to make pdf-tools working within emacs.
+
 #+begin_src emacs-lisp :tangle yes
 (add-hook 'pdf-tools-enabled-hook 'pdf-view-dark-minor-mode)
 #+end_src
+
 ** Remap keybindings
+
 Does not work...
+
 #+begin_src emacs-lisp :tangle no
 (map! :after pdf-tools
       :map (pdf-view-mode-map pdf-annot-minor-mode-maP)
@@ -803,6 +601,7 @@ Does not work...
 #+end_src
 
 * Presentations
+
 #+begin_src emacs-lisp :tangle yes
 (defun efs/presentation-setup ()
   (setq text-scale-mode-amount 3)
@@ -826,63 +625,16 @@ Does not work...
 ;; (setq face-remapping-alist '((default (:height 2.4) default)
 ;;                              (italic (sheight 2.4) italic)))
 #+end_src
+
 * Org-agenda files
-#+begin_src emacs-lisp :tangle yes
-(after! org
-  (setq org-agenda-files (append
-                       '("/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/douleur/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/pharmacometrie/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/stresam/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/cannapark/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/hopital/csh/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/assos/amipbm/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/assos/fnsipbm/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/perso/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/biology/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/chemistry/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/conseil-scientifique/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/communications/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/computer-science/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/funding/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/teaching/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/these-pharma/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/these-science/"
-                          "/Users/vincentmontero/Library/Mobile Documents/com~apple~CloudDocs/02_work/univ/writing-articles/")
-                        ))
-)
-#+end_src
 
 * Export
+
 ** Latex
+
 *** Export process
 
 Keep relative and absolute paths from org-cite
-#+begin_src emacs-lisp :tangle yes
-(defun org-cite-list-bibliography-files ()
-  "List all bibliography files defined in the buffer."
-  (delete-dups
-   (append (mapcar (lambda (value)
-		     (pcase value
-		       (`(,f . ,d)
-                        (setq f (org-strip-quotes f))
-                        (if (or (file-name-absolute-p f)
-                                (file-remote-p f)
-                                (equal d default-directory))
-                            ;; Keep absolute paths, remote paths, and
-                            ;; local relative paths.
-                            f
-                          ;; Adjust relative bibliography path for
-                          ;; #+SETUP files located in other directory.
-                          ;; Also, see `org-export--update-included-link'.
-                          (file-relative-name
-                           (expand-file-name f d) default-directory)))))
-		   (pcase (org-collect-keywords
-                           '("BIBLIOGRAPHY") nil '("BIBLIOGRAPHY"))
-		     (`(("BIBLIOGRAPHY" . ,pairs)) pairs)))
-	   org-cite-global-bibliography)))
-#+end_src
 
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-title-command "")
@@ -898,7 +650,9 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 *** Packages
+
 **** Override Scimax defaults: Text and fonts
+
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-default-packages-alist
       '(
@@ -935,6 +689,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Page layout
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "marginnote" nil))  ;; For left column
 (add-to-list 'org-latex-packages-alist '("" "marginfix" nil))   ;; For command \clearmargin for manually moving the left column to the next page
@@ -950,6 +705,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Texts & Fonts
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("right" "lineno" t))           ;; Line numbers on paragraphs
 (add-to-list 'org-latex-packages-alist '("" "soul" nil))                ;; To highlight text
@@ -961,22 +717,26 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Bibliography
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "natmove" nil))     ;; The package has only one purpose: to move superscripted citations beyond punctuation
 #+end_src
 
 **** Hyperlinks
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "url" nil))
 #+end_src
 
 **** Files & PDFs
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "pdfpages" nil))           ; Include PDF documents in LATEX
 (add-to-list 'org-latex-packages-alist '("" "attachfile" nil))  ;; Attach arbitrary files to a PDF document
 #+end_src
 
 **** Floats: figs & tables
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "adjustbox" nil))     ;; Graphics package-alike macros for “general” boxes
 (add-to-list 'org-latex-packages-alist '("skip=0.5 \\baselineskip" "caption" nil)) ; Customising captions in floating environments
@@ -985,6 +745,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Figures & images
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "epstopdf" nil)) ; Convert EPS to PDF using Ghostscript
 (add-to-list 'org-latex-packages-alist '("" "tikz" nil))            ; For \foreach used for Orcid icon
@@ -993,6 +754,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Tables
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "longtable" nil))             ; Tabulars with adjustable-width columns
 (add-to-list 'org-latex-packages-alist '("" "booktabs" nil))  ; for \toprule etc. in tables
@@ -1004,12 +766,14 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Glossaries and indexes
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("" "glossaries" nil))
 (add-to-list 'org-latex-packages-alist '("" "makeidx" nil))
 #+end_src
 
 **** Maths & science
+
 #+begin_src emacs-lisp :tangle no
 (add-to-list 'org-latex-packages-alist '("" "calc" nil))            ; Simple arithmetic in LATEX commands
 (add-to-list 'org-latex-packages-alist '("" "mathpazo" nil))  ; Fonts to typeset mathematics to match Palatino
@@ -1026,6 +790,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Chemistry
+
 #+begin_src emacs-lisp :tangle yes
 (add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t)) ; provides commands for typesetting chemical molecular formulae and equations.
 (add-to-list 'org-latex-packages-alist '("" "chemmacros" t)) ; A collection of macros to support typesetting chemistry documents, nomenclature commands, oxidation numbers, thermodynamic data, newman projections, etc.
@@ -1034,6 +799,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 **** Code
+
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-listings 'minted)
 (setq org-latex-custom-lang-environments
@@ -1174,6 +940,7 @@ Keep relative and absolute paths from org-cite
 #+end_src
 
 *** Export with Biber
+
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-export-to-pdf-biber ()
   "Export the current buffer to PDF using Org mode and open the resulting PDF file."
@@ -1188,7 +955,9 @@ Keep relative and absolute paths from org-cite
     (org-latex-export-to-pdf)
     (org-open-file (concat (file-name-sans-extension buffer-file-name) ".pdf"))))
 #+end_src
+
 *** Export with glossaries & acronyms
+
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-export-to-pdf-gloss-bibtex ()
   "Export the current buffer to PDF using Org mode and open the resulting PDF file."
@@ -1237,7 +1006,6 @@ https://kitchingroup.cheme.cmu.edu/blog/2014/10/11/Abbreviated-journal-names-in-
 
 #+begin_src emacs-lisp :tangle yes
 (defvar bibtex-abbreviations
-
   '(
     ("ACAT" "ACS Catalysis" "ACS Catal.")
     ("AM" "Acta Materialia" "Acta Mater.")
@@ -1462,7 +1230,6 @@ https://kitchingroup.cheme.cmu.edu/blog/2014/10/11/Abbreviated-journal-names-in-
   "List of (string journal-full-name journal-abbreviation)")
 #+end_src
 
-
 #+begin_src emacs-lisp :tangle yes
 (defun jmax-bibtex-generate-longtitles ()
   (interactive)
@@ -1512,6 +1279,7 @@ https://kitchingroup.cheme.cmu.edu/blog/2014/10/11/Abbreviated-journal-names-in-
 #+end_src
 
 *** Default image size
+
 #+begin_src emacs-lisp :tangle yes
 (setq org-latex-image-default-width nil)
 #+end_src
@@ -1523,6 +1291,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 #+end_src
 
 ** HTML export fixes
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;;				Last Update HTML
 (defun my-org-html-postamble (plist)
@@ -1531,6 +1300,7 @@ This package conflicts with Doom Emacs jupyter configuration !
 #+END_SRC
 
 * Opening files
+
 ** MS files
 
 #+begin_src emacs-lisp :tangle yes
@@ -1540,10 +1310,13 @@ This package conflicts with Doom Emacs jupyter configuration !
       ("\\.pptx\\'" . default)
       ))
 #+end_src
+
 * Misc
+
 ** Evil mode
 
 Go back to normal mode after 10s of inactivity
+
 #+begin_src emacs-lisp :tangle yes
 (defun evil-normalize-all-buffers ()
   "Force a drop to normal state."
@@ -1563,6 +1336,7 @@ Go back to normal mode after 10s of inactivity
 #+end_src
 
 Save the buffer after exiting insert mode
+
 #+begin_src emacs-lisp :tangle yes
 (add-hook 'evil-insert-state-exit-hook
           (lambda ()
@@ -1573,6 +1347,7 @@ Save the buffer after exiting insert mode
 #+end_src
 
 Exit insert mode after saving buffer
+
 #+begin_src emacs-lisp :tangle yes
 (add-hook 'save-buffer
           (lambda ()

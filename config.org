@@ -22,23 +22,6 @@ Run elisp:emacs-version to share info
         user-mail-address "vincent_montero@icloud.com")
 #+end_src
 
-* Directories
-#+begin_src emacs-lisp :tangle yes
-(setq my/home-dir "/Users/vincentmontero/")
-
-(setq my/sync-base-dir (concat my/home-dir "/Library/Mobile Documents/com~apple~CloudDocs/"))
-(setq my/work-base-dir (concat my/sync-base-dir "02_work/"))
-(setq my/media-base-dir (concat my/sync-base-dir "Media/"))
-(setq org-directory my/work-base-dir
-      org-roam-directory    (concat org-directory "org-roam/")
-      )
-
-(setq scimax-dir "~/scimax/")
-(setq scimax-user-dir "~/scimax/")
-
-(setq python-shell-interpreter "/opt/homebrew/anaconda3/bin/python")
-#+end_src
-
 * Org-auto-tangle
 #+begin_src emacs-lisp :tangle yes
 (use-package org-auto-tangle
